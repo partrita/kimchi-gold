@@ -1,9 +1,9 @@
-name: Daily Kimchi Gold Collect
+name: Daily Kimchi Gold
 
 on:
   schedule:
-    # 매일 오전 90시(한국시간, KST=UTC+9) 실행 (UTC 기준 0 10 * * *)
-    - cron: '0 1 * * *'
+    # 매일 정오(한국시간, KST=UTC+9) 실행 (UTC 기준 0 12 * * *)
+    - cron: '0 3 * * *'
   workflow_dispatch:  # 수동 실행도 가능하게 함
 
 jobs:
@@ -27,6 +27,23 @@ jobs:
         run: |
           uv run python src/kimchi_gold/collect_price.py
           uv run python src/kimchi_gold/plot.py
+
+      - name: Run kimchi_signal script and get result
+        id: run_python
+        run: uv run python src/kimchi_gold/kimchi_signal.py
+
+      - name: Check result and create issue
+        if: steps.run_python.outputs.stdout == 'True\n' # 파이썬 print 결과와 비교
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Signal 파이썬 스크립트 실행 결과가 True 입니다.',
+              body: '자동으로 생성된 이슈입니다. 자세한 내용은 로그를 확인해주세요.'
+            });
 
       - name: Commit and push changes
         run: |
