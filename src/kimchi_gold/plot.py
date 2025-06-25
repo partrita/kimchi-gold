@@ -1,126 +1,176 @@
+"""
+Generates and saves plots related to Kimchi premium for gold.
+
+This module reads logged gold price and Kimchi premium data, then generates
+three plots:
+1. Kimchi Premium (%) over time.
+2. Domestic vs. International Gold Prices (KRW/g) over time.
+3. USD/KRW Exchange Rate over time.
+
+The generated plots are saved as a single PNG image file.
+Configuration for the plot, such as the number of months of data to display
+and filenames, is managed by the `Config` and `FilePaths` classes.
+"""
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta # Keep datetime for type hints if needed
+# Import 'date' specifically if you are using it for type hints for date objects
+from datetime import date as DateType # Alias for clarity
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 
 class Config:
     """
-    애플리케이션의 설정을 관리하는 클래스입니다.
-    여기서는 보고 싶은 데이터 기간과 관련된 설정을 정의합니다.
+    Manages application settings, specifically for data visualization.
+
+    Defines the period of data to display and filenames for data and output.
+
+    :ivar MONTHS: The number of recent months of data to include in the plots.
+    :vartype MONTHS: int
+    :ivar DATA_FILENAME: The filename of the CSV log containing gold price data.
+    :vartype DATA_FILENAME: str
+    :ivar OUTPUT_FILENAME: The base filename for the generated plot image.
+                           The number of months from `MONTHS` is incorporated into the final name.
+    :vartype OUTPUT_FILENAME: str
     """
 
-    MONTHS: int = 12  # 보고 싶은 데이터 기간 (개월 수). 기본값은 12개월입니다.
-    DATA_FILENAME: str = "kimchi_gold_price_log.csv"  # 사용할 데이터 파일 이름
+    MONTHS: int = 12
+    """Number of past months to display in the plots. Default is 12."""
+
+    DATA_FILENAME: str = "kimchi_gold_price_log.csv"
+    """Filename for the input CSV data log."""
+
     OUTPUT_FILENAME: str = (
-        f"kimchi_gold_price_recent_{MONTHS}months.png"  # 저장할 그래프 파일 이름
+        f"kimchi_gold_price_recent_{MONTHS}months.png"
     )
+    """
+    Filename for the output plot image.
+    Dynamically includes the number of months defined in `MONTHS`.
+    """
 
 
 class FilePaths:
     """
-    파일 경로들을 관리하는 클래스입니다.
-    데이터 파일과 출력 파일의 위치를 정의합니다.
+    Manages file and directory paths used by the plotting script.
+
+    Defines paths for the current script directory, project root, data directory,
+    input data file, and output plot file.
+
+    :cvar CURRENT_DIR: Path to the directory containing this script.
+    :vartype CURRENT_DIR: Path
+    :cvar ROOT_DIR: Path to the project's root directory.
+    :vartype ROOT_DIR: Path
+    :cvar DATA_DIR: Path to the directory where data files are stored/expected.
+    :vartype DATA_DIR: Path
+    :cvar DATA_FILE: Full path to the input CSV data file, derived from `DATA_DIR` and `Config.DATA_FILENAME`.
+    :vartype DATA_FILE: Path
+    :cvar OUTPUT_FILE: Full path to the output plot image file, derived from `DATA_DIR` and `Config.OUTPUT_FILENAME`.
+    :vartype OUTPUT_FILE: Path
     """
 
-    CURRENT_DIR: Path = Path(__file__).resolve().parent  # 현재 스크립트가 있는 디렉토리
-    ROOT_DIR: Path = (
-        CURRENT_DIR.parent.parent
-    )  # 프로젝트의 루트 디렉토리 (현재 디렉토리의 두 단계 위)
-    DATA_DIR: Path = ROOT_DIR / "data"  # 데이터 폴더 경로
-    DATA_FILE: Path = DATA_DIR / Config.DATA_FILENAME  # 실제 데이터 파일 경로
-    OUTPUT_FILE: Path = DATA_DIR / Config.OUTPUT_FILENAME  # 실제 출력 파일 경로
+    CURRENT_DIR: Path = Path(__file__).resolve().parent
+    """Path to the directory where this script is located."""
+
+    ROOT_DIR: Path = CURRENT_DIR.parent.parent
+    """Path to the root directory of the project."""
+
+    DATA_DIR: Path = ROOT_DIR / "data"
+    """Path to the data storage directory."""
+
+    DATA_FILE: Path = DATA_DIR / Config.DATA_FILENAME
+    """Full path to the CSV data log file."""
+
+    OUTPUT_FILE: Path = DATA_DIR / Config.OUTPUT_FILENAME
+    """Full path where the generated plot image will be saved."""
+
+# Ensure data directory exists when module is loaded
+FilePaths.DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def load_and_preprocess_data(data_file: Path, months: int) -> pd.DataFrame:
     """
-    CSV 파일에서 데이터를 읽어오고, 날짜 형식으로 변환한 뒤,
-    최근 'months' 개월의 데이터만 필터링하는 함수입니다.
+    Loads and preprocesses gold price data from a CSV file.
 
-    Args:
-        data_file (Path): 읽어올 CSV 파일의 경로.
-        months (int): 보고 싶은 최근 개월 수.
+    Reads the CSV, converts the '날짜' (date) column to `datetime.date` objects,
+    sets this column as the DataFrame index, and filters the data to include
+    only the records from the specified number of recent months.
 
-    Returns:
-        pd.DataFrame: 날짜를 인덱스로 가지고 필터링된 데이터프레임.
-
-    Raises:
-        FileNotFoundError: 지정된 데이터 파일이 없을 경우 발생합니다.
-        ValueError: 최근 'months' 동안의 데이터가 없을 경우 발생합니다.
+    :param data_file: Path to the input CSV file.
+    :type data_file: Path
+    :param months: The number of recent months of data to retain.
+    :type months: int
+    :return: A DataFrame with a `datetime.date` index, filtered for the specified period.
+    :rtype: pd.DataFrame
+    :raises FileNotFoundError: If `data_file` does not exist.
+    :raises ValueError: If no data is available for the specified recent `months`.
     """
     try:
-        df: pd.DataFrame = pd.read_csv(
-            data_file
-        )  # CSV 파일을 pandas DataFrame으로 읽어옵니다.
+        df: pd.DataFrame = pd.read_csv(data_file)
     except FileNotFoundError:
-        raise FileNotFoundError(
-            f"Error: {data_file} not found."
-        )  # 파일이 없으면 에러를 발생시킵니다.
+        # Re-raise with a more specific message if desired, or let it propagate
+        raise FileNotFoundError(f"Error: Data file '{data_file}' not found.")
 
-    df["날짜"] = pd.to_datetime(
-        df["날짜"]
-    ).dt.date  # '날짜' 컬럼을 datetime.date 형식으로 변환합니다.
-    df = df.set_index("날짜")  # '날짜' 컬럼을 DataFrame의 인덱스로 설정합니다.
+    df["날짜"] = pd.to_datetime(df["날짜"]).dt.date # Convert to datetime.date objects
+    df = df.set_index("날짜")
 
-    today: datetime.date = datetime.now().date()  # 현재 날짜를 구합니다.
-    months_ago: datetime.date = today - timedelta(
-        days=months * 30
-    )  # 대략 'months' 개월 전의 날짜를 계산합니다. (정확한 월 계산은 아님)
-    df_period: pd.DataFrame = df[
-        df.index >= months_ago
-    ]  # 인덱스(날짜)를 기준으로 최근 'months' 동안의 데이터를 필터링합니다.
+    today: DateType = datetime.now().date() # Use DateType alias for clarity
+    # Calculate N months ago by subtracting N*30 days. This is an approximation.
+    months_ago: DateType = today - timedelta(days=months * 30)
+
+    df_period: pd.DataFrame = df[df.index >= months_ago]
 
     if df_period.empty:
-        raise ValueError(
-            f"No data available for the last {months} months."
-        )  # 필터링된 데이터가 없으면 에러를 발생시킵니다.
+        raise ValueError(f"No data available for the last {months} months.")
 
-    return df_period  # 필터링된 DataFrame을 반환합니다.
+    return df_period
 
 
 def plot_kimchi_premium(ax: Axes, df: pd.DataFrame, months: int) -> None:
     """
-    김치 프리미엄(%) 데이터를 선 그래프로 그리는 함수입니다.
+    Plots the Kimchi premium percentage over time on a given Matplotlib Axes.
 
-    Args:
-        ax (Axes): 그래프를 그릴 Matplotlib Axes 객체.
-        df (pd.DataFrame): 그래프에 사용할 데이터프레임 (날짜를 인덱스로 가져야 함).
-        months (int): 그래프 제목에 표시할 기간 (개월 수).
+    :param ax: The Matplotlib Axes object on which to draw the plot.
+    :type ax: matplotlib.axes.Axes
+    :param df: DataFrame containing the data to plot. Expected to have a
+               `datetime.date` index and a '김치프리미엄(%)' column.
+    :type df: pd.DataFrame
+    :param months: The number of months the data represents, used for the plot title.
+    :type months: int
     """
     ax.plot(
-        df.index,  # x축은 날짜
-        df["김치프리미엄(%)"],  # y축은 김치 프리미엄 (%) 컬럼
-        label="Kimchi Premium (%)",  # 범례에 표시될 레이블
-        color="red",  # 선 색깔
-        linestyle="--",  # 선 스타일 (dashed)
-        marker="d",  # 데이터 포인트 마커 (diamond)
+        df.index,
+        df["김치프리미엄(%)"],
+        label="Kimchi Premium (%)",
+        color="red",
+        linestyle="--",
+        marker="d",
     )
-    ax.set_ylabel("Kimchi Premium (%)")  # y축 레이블 설정
-    ax.set_title(f"Recent {months} Months: Kimchi Premium (%)")  # 그래프 제목 설정
-    ax.legend(loc="upper left")  # 범례 위치 설정 (좌측 상단)
-    ax.tick_params(
-        axis="x", rotation=45
-    )  # x축 눈금 레이블을 45도 회전하여 가독성을 높입니다.
-    ax.xaxis.set_major_locator(
-        mdates.AutoDateLocator()
-    )  # x축 주요 눈금 위치를 자동으로 설정합니다.
-    ax.xaxis.set_major_formatter(
-        mdates.DateFormatter("%Y-%m-%d")
-    )  # x축 날짜 형식 설정 (YYYY-MM-DD)
-    ax.grid(True)  # 격자선 표시
+    ax.set_ylabel("Kimchi Premium (%)")
+    ax.set_title(f"Recent {months} Months: Kimchi Premium (%)")
+    ax.legend(loc="upper left")
+    ax.tick_params(axis="x", rotation=45)
+    ax.xaxis.set_major_locator(mdates.AutoDateLocator()) # Auto-scales date ticks
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d")) # Formats date ticks
+    ax.grid(True)
 
 
 def plot_gold_prices(ax: Axes, df: pd.DataFrame, months: int) -> None:
     """
-    국내 금 가격과 국제 금 가격 (환율 조정) 데이터를 선 그래프로 그리는 함수입니다.
+    Plots domestic and international gold prices (KRW/g) on a given Matplotlib Axes.
 
-    Args:
-        ax (Axes): 그래프를 그릴 Matplotlib Axes 객체.
-        df (pd.DataFrame): 그래프에 사용할 데이터프레임.
-        months (int): 그래프 제목에 표시할 기간 (개월 수).
+    International gold price is converted from USD/ounce to KRW/gram using
+    the '환율(원/달러)' column from the DataFrame.
+
+    :param ax: The Matplotlib Axes object on which to draw the plot.
+    :type ax: matplotlib.axes.Axes
+    :param df: DataFrame containing the data. Expected to have a `datetime.date` index
+               and columns '국내금(원/g)', '국제금(달러/온스)', and '환율(원/달러)'.
+    :type df: pd.DataFrame
+    :param months: The number of months the data represents, used for the plot title.
+    :type months: int
     """
     ax.plot(
         df.index,
@@ -128,11 +178,11 @@ def plot_gold_prices(ax: Axes, df: pd.DataFrame, months: int) -> None:
         label="Domestic Gold (KRW/g)",
         marker="o",
     )
+    # Calculate international gold price in KRW/g
+    international_krw_g = df["국제금(달러/온스)"] * (1 / 31.1035) * df["환율(원/달러)"]
     ax.plot(
         df.index,
-        df["국제금(달러/온스)"]
-        * (1 / 31.1035)
-        * df["환율(원/달러)"],  # 국제 금 가격을 원/g 단위로 환산
+        international_krw_g,
         label="International Gold (KRW/g, FX adjusted)",
         marker="x",
     )
@@ -147,12 +197,15 @@ def plot_gold_prices(ax: Axes, df: pd.DataFrame, months: int) -> None:
 
 def plot_exchange_rate(ax: Axes, df: pd.DataFrame, months: int) -> None:
     """
-    환율(원/달러) 데이터를 선 그래프로 그리는 함수입니다.
+    Plots the USD/KRW exchange rate over time on a given Matplotlib Axes.
 
-    Args:
-        ax (Axes): 그래프를 그릴 Matplotlib Axes 객체.
-        df (pd.DataFrame): 그래프에 사용할 데이터프레임.
-        months (int): 그래프 제목에 표시할 기간 (개월 수).
+    :param ax: The Matplotlib Axes object on which to draw the plot.
+    :type ax: matplotlib.axes.Axes
+    :param df: DataFrame containing the data. Expected to have a `datetime.date` index
+               and a '환율(원/달러)' column.
+    :type df: pd.DataFrame
+    :param months: The number of months the data represents, used for the plot title.
+    :type months: int
     """
     ax.plot(
         df.index,
@@ -172,53 +225,54 @@ def plot_exchange_rate(ax: Axes, df: pd.DataFrame, months: int) -> None:
 
 def main():
     """
-    메인 실행 함수입니다.
-    데이터를 로드하고 전처리한 후, 세 개의 그래프를 생성하고 저장합니다.
+    Main function to generate and save the consolidated gold price plots.
+
+    It loads data, creates a figure with three subplots (for Kimchi premium,
+    gold prices, and exchange rate), plots the data on these subplots,
+    and saves the figure to a file specified by `FilePaths.OUTPUT_FILE`.
+    Handles `FileNotFoundError` and `ValueError` during data loading by
+    printing an error message and exiting. Other exceptions during plotting
+    will propagate.
     """
-    FilePaths.DATA_DIR.mkdir(
-        parents=True, exist_ok=True
-    )  # 데이터 폴더가 없으면 만들고, 있으면 무시합니다.
+    # Data directory is created when the module is loaded.
+    # FilePaths.DATA_DIR.mkdir(parents=True, exist_ok=True) # This is now at module level
 
     try:
         df_period: pd.DataFrame = load_and_preprocess_data(
             FilePaths.DATA_FILE, Config.MONTHS
         )
-        # 데이터를 로드하고 최근 'Config.MONTHS' 기간으로 필터링합니다.
     except FileNotFoundError as e:
-        print(e)  # 파일이 없을 경우 에러 메시지를 출력하고 프로그램을 종료합니다.
-        return
+        print(e)
+        return # Exit if data file not found
     except ValueError as e:
-        print(e)  # 데이터가 없을 경우 에러 메시지를 출력하고 프로그램을 종료합니다.
-        return
+        print(e)
+        return # Exit if no recent data
 
-    plt.style.use("seaborn-v0_8-whitegrid")  # Matplotlib 스타일을 설정합니다.
+    plt.style.use("seaborn-v0_8-whitegrid")
     fig: Figure
-    axes: list[Axes]
-    fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(12, 15))
-    # 3개의 서브플롯을 가지는 Figure와 Axes 객체 리스트를 생성합니다. (세로로 3개, 가로로 1개)
-    plt.subplots_adjust(hspace=0.5)  # 서브플롯 간의 수직 간격을 조정합니다.
+    axes_list: list[Axes] # Renamed 'axes' to 'axes_list' to avoid conflict with matplotlib.axes
+    fig, axes_list = plt.subplots(nrows=3, ncols=1, figsize=(12, 15))
+    plt.subplots_adjust(hspace=0.5) # Adjust vertical spacing between subplots
 
-    plot_kimchi_premium(
-        axes[0], df_period, Config.MONTHS
-    )  # 첫 번째 서브플롯에 김치 프리미엄 그래프를 그립니다.
-    plot_gold_prices(
-        axes[1], df_period, Config.MONTHS
-    )  # 두 번째 서브플롯에 금 가격 그래프를 그립니다.
-    plot_exchange_rate(
-        axes[2], df_period, Config.MONTHS
-    )  # 세 번째 서브플롯에 환율 그래프를 그립니다.
+    plot_kimchi_premium(axes_list[0], df_period, Config.MONTHS)
+    plot_gold_prices(axes_list[1], df_period, Config.MONTHS)
+    plot_exchange_rate(axes_list[2], df_period, Config.MONTHS)
 
-    plt.tight_layout()  # 서브플롯들이 겹치지 않도록 레이아웃을 조정합니다.
-    plt.savefig(FilePaths.OUTPUT_FILE)  # 생성된 그래프를 이미지 파일로 저장합니다.
+    plt.tight_layout() # Adjust layout to prevent overlapping elements
+    plt.savefig(FilePaths.OUTPUT_FILE)
 
 
 if __name__ == "__main__":
+    # This block executes when the script is run directly.
+    # It calls the main plotting function and prints success or failure messages.
     try:
-        main()  # main 함수를 실행합니다.
+        main()
+        # Success message uses Config.MONTHS and FilePaths.OUTPUT_FILE which are module-level
         print(
-            f"{Config.MONTHS}개월 그래프가 성공적으로 {FilePaths.OUTPUT_FILE}에 저장되었습니다"
+            f"{Config.MONTHS}개월 그래프가 성공적으로 '{FilePaths.OUTPUT_FILE}'에 저장되었습니다"
         )
     except Exception as e:
+        # General exception catch for any errors not handled within main()
         print(
             f"시각화 실패: {e}"
-        )  # 예외가 발생하면 실패 메시지와 에러 내용을 출력합니다.
+        )

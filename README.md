@@ -7,8 +7,66 @@ KRX 금 가격의 김치 프리미엄을 계산하는 스크립트와 리눅스 
 
 **스크립트:**
 
-* now_price.py: KRX 금 가격의 김치 프리미엄을 계산합니다.
-* plot.py:최근 12개월간의 김치 프리미엄 추이를 보여주는 그래프 (`kimchi_gold_price_recent_12months.png`)를 생성합니다.
+* `src/kimchi_gold/collect_price.py`: 매일 금 가격 및 환율 정보를 수집하여 CSV 파일에 기록합니다. (기존 `now_price.py`의 기능 통합 및 확장)
+* `src/kimchi_gold/now_price.py`: 특정 시점의 국내외 금 가격, 환율을 가져와 김치 프리미엄을 계산하는 함수들을 제공합니다.
+* `src/kimchi_gold/plot.py`: CSV에 기록된 데이터를 바탕으로 최근 지정된 개월간의 김치 프리미엄 추이, 금 가격, 환율 그래프를 생성합니다. (예: `data/kimchi_gold_price_recent_12months.png`)
+* `src/kimchi_gold/kimchi_signal.py`: 저장된 데이터를 분석하여 현재 김치 프리미엄이 통계적 이상치인지 판단합니다.
+
+## 프로젝트 개요
+
+이 프로젝트는 다음 주요 기능을 제공합니다:
+1.  **데이터 수집**: 매일 KRX 금 시세, 국제 금 시세 (COMEX Gold Futures), USD/KRW 환율을 웹 스크레이핑을 통해 수집합니다.
+2.  **김치 프리미엄 계산**: 수집된 데이터를 바탕으로 국내 금 가격과 국제 금 가격(원화 환산) 간의 차이인 '김치 프리미엄'을 계산합니다.
+3.  **데이터 로깅**: 계산된 가격 정보와 김치 프리미엄을 CSV 파일 (`data/kimchi_gold_price_log.csv`)에 매일 기록합니다.
+4.  **시각화**: 저장된 데이터를 사용하여 김치 프리미엄, 금 가격, 환율의 시계열 그래프를 생성하고 이미지 파일로 저장합니다.
+5.  **이상치 탐지**: 김치 프리미엄이 과거 데이터에 비해 통계적으로 유의미한 이상치인지 판단하는 기능을 제공합니다.
+
+## Development Setup
+
+이 프로젝트는 `uv`를 사용하여 패키지 및 가상 환경 관리를 합니다.
+
+1.  **가상 환경 생성 및 활성화**:
+    ```bash
+    uv venv
+    source .venv/bin/activate  # Linux/macOS
+    # .venv\Scripts\activate  # Windows (PowerShell/CMD)
+    ```
+
+2.  **의존성 설치**:
+    프로젝트 실행에 필요한 기본 의존성과 개발 의존성(테스트 도구 등)을 함께 설치합니다.
+    ```bash
+    uv pip install -e .[dev]
+    ```
+    이는 `pyproject.toml`에 정의된 `dependencies`와 `dev` 그룹의 `optional-dependencies`를 설치합니다.
+
+## Running Tests
+
+이 프로젝트는 `pytest`를 사용하여 테스트를 관리합니다.
+
+1.  **테스트 실행**:
+    프로젝트 루트 디렉토리에서 다음 명령어를 실행하여 전체 테스트 스위트를 실행합니다.
+    ```bash
+    .venv/bin/python -m pytest tests/
+    ```
+
+2.  **테스트 커버리지 확인**:
+    테스트 커버리지를 확인하려면 다음 명령어를 사용합니다. 커버리지 리포트는 터미널에 출력됩니다.
+    ```bash
+    .venv/bin/python -m pytest --cov=src/kimchi_gold tests/
+    ```
+
+## Code Documentation
+
+모든 Python 코드 (`src/kimchi_gold/` 내)에는 Sphinx 스타일 독스트링이 작성되어 있습니다. 이는 코드의 이해를 돕고, 향후 Sphinx를 사용하여 HTML 문서를 생성하는 데 사용될 수 있습니다.
+
+예를 들어, Sphinx와 적절한 테마 (`sphinx-rtd-theme` 등)를 설치한 후 다음과 같은 명령으로 HTML 문서를 빌드할 수 있습니다 (설정 파일 `conf.py` 필요):
+```bash
+# sphinx-quickstart (최초 설정)
+sphinx-apidoc -o docs/source src/kimchi_gold
+cd docs
+make html
+```
+(주의: 실제 Sphinx 빌드 설정은 이 프로젝트에 아직 포함되어 있지 않습니다.)
 
 **리눅스 서버 자동 실행 설정 (Cron):**
 
