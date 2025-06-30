@@ -1,34 +1,23 @@
 import pandas as pd
-from pathlib import Path
-from datetime import datetime, timedelta
-
-CURRENT_DIR: Path = Path(__file__).resolve().parent
-ROOT_DIR: Path = CURRENT_DIR.parent.parent  # 루트 폴더
-DATA_DIR: Path = ROOT_DIR / "data"
-DATA_DIR.mkdir(parents=True, exist_ok=True)
-DATA_FILE: Path = DATA_DIR / "kimchi_gold_price_log.csv"
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from kimchi_gold.config import DATA_FILE
 
 def is_outlier(df: pd.DataFrame, column: str) -> bool:
     """
     특정 컬럼의 최근 1년 데이터를 기준으로 사분위수를 계산하고,
-    오늘 날짜의 데이터가 이상치인지 여부를 반환합니다.
-
-    Args:
-        df (pd.DataFrame): 데이터프레임
-        column (str): 확인할 컬럼명
-
-    Returns:
-        bool: 오늘 데이터가 이상치면 True, 아니면 False
+    가장 최근 데이터가 이상치인지 여부를 반환합니다.
     """
     if df.empty:
         return False
 
-    df['날짜'] = pd.to_datetime(df['날짜'])
-    today = datetime.now().date()
-    one_year_ago = today - timedelta(days=365)
-    recent_year_data = df[(df['날짜'].dt.date >= one_year_ago) & (df['날짜'].dt.date <= today)].copy()
+    df['날짜'] = pd.to_datetime(df['날짜']).dt.date
+    df = df.set_index('날짜')
 
-    if recent_year_data.empty:
+    one_year_ago = datetime.now().date() - relativedelta(years=1)
+    recent_year_data = df[df.index >= one_year_ago].copy()
+
+    if len(recent_year_data) < 2: # 최소 2개의 데이터 포인트가 필요
         return False
 
     Q1 = recent_year_data[column].quantile(0.25)
@@ -37,11 +26,11 @@ def is_outlier(df: pd.DataFrame, column: str) -> bool:
     lower_bound = Q1 - 1.5 * IQR
     upper_bound = Q3 + 1.5 * IQR
 
-    latest_value = recent_year_data.iloc[-1][column] #가장 최근 데이터가 오늘 데이터라고 가정
+    latest_value = recent_year_data.iloc[-1][column]
 
     return (latest_value < lower_bound) or (latest_value > upper_bound)
 
-def check_kimchi_premium_outlier():
+def check_kimchi_premium_outlier() -> bool:
     """
     김치 프리미엄(%) 데이터의 최근 1년치 사분위수를 계산하고,
     오늘 김치 프리미엄(%) 값이 이상치인지 확인하여 True 또는 False를 반환합니다.
@@ -58,4 +47,4 @@ def check_kimchi_premium_outlier():
 
 if __name__ == "__main__":
     result = check_kimchi_premium_outlier()
-    print(result) # GitHub Actions에서 결과를 캡처하기 위해 print 합니다.
+    print(result)

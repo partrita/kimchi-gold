@@ -2,13 +2,9 @@ import csv
 from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple
-from kimchi_gold.now_price import calc_kimchi_premium
 
-CURRENT_DIR: Path = Path(__file__).resolve().parent
-ROOT_DIR: Path = CURRENT_DIR.parent.parent  # 루트 폴더
-DATA_DIR: Path = ROOT_DIR / "data"
-DATA_DIR.mkdir(parents=True, exist_ok=True)
-DATA_FILE: Path = DATA_DIR / "kimchi_gold_price_log.csv"
+from kimchi_gold.config import DATA_FILE
+from kimchi_gold.now_price import calc_kimchi_premium, PriceScrapingError
 
 
 def is_today_logged(filename: Path) -> bool:
@@ -18,7 +14,10 @@ def is_today_logged(filename: Path) -> bool:
     today_str: str = datetime.now().strftime("%Y-%m-%d")
     with filename.open("r", encoding="utf-8") as f:
         reader = csv.reader(f)
-        next(reader, None)  # 헤더 스킵
+        try:
+            next(reader, None)  # 헤더 스킵
+        except StopIteration:
+            return False # 파일이 비어있는 경우
         for row in reader:
             if row and row[0].startswith(today_str):
                 return True
@@ -26,7 +25,7 @@ def is_today_logged(filename: Path) -> bool:
 
 
 def write_to_csv(row: List[str], filename: Path = DATA_FILE) -> None:
-    file_exists: bool = filename.exists()
+    file_exists: bool = filename.exists() and filename.stat().st_size > 0
     with filename.open(mode="a", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
         if not file_exists:
@@ -45,12 +44,13 @@ def write_to_csv(row: List[str], filename: Path = DATA_FILE) -> None:
 
 
 def collect_data() -> None:
+    DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
     if is_today_logged(DATA_FILE):
         print("오늘 데이터가 이미 존재합니다. 수집을 중단합니다.")
         return
     try:
         result: Tuple[float, float, float, float, float, float] = calc_kimchi_premium()
-        domestic, international, international_krw_per_g, usdkrw, diff, premium = result
+        domestic, international, _, usdkrw, diff, premium = result
         today: str = datetime.now().strftime("%Y-%m-%d")
         row: List[str] = [
             today,
@@ -62,9 +62,10 @@ def collect_data() -> None:
         ]
         write_to_csv(row)
         print(f"수집 완료: {row}")
-    except Exception as e:
+    except PriceScrapingError as e:
         print(f"수집 실패: {e}")
-
+    except Exception as e:
+        print(f"알 수 없는 오류로 수집 실패: {e}")
 
 if __name__ == "__main__":
     collect_data()

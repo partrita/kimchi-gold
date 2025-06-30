@@ -1,48 +1,44 @@
 import re
-from typing import Dict, Tuple
+from typing import Tuple
 import requests
 from bs4 import BeautifulSoup
+from kimchi_gold.config import NAVER_FINANCE_URLS, REQUEST_HEADERS
 
-HEADERS: Dict[str, str] = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
-    ),
-    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Referer": "https://m.stock.naver.com/",
-}
+class PriceScrapingError(Exception):
+    """가격 스크래핑 중 에러 발생 시 사용하는 커스텀 예외"""
+    pass
 
-
-def get_price_from_naver(
-    url: str, error_msg: str, regex: str = r"[\d,]+(?:\.\d+)?"
-) -> float:
+def get_price_from_naver(url: str, error_msg: str) -> float:
     """
     네이버 금융에서 가격 정보를 추출하는 공통 함수
     """
-    response = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(response.content, "html.parser")
-    price_tag = soup.find("strong", class_="DetailInfo_price__I_VJn")
-    if price_tag:
-        text = price_tag.get_text()
-        price = re.search(regex, text)
-        if price:
-            return float(price.group().replace(",", ""))
-    raise ValueError(error_msg)
+    try:
+        response = requests.get(url, headers=REQUEST_HEADERS, timeout=10)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.content, "html.parser")
+        price_tag = soup.find("strong", class_="DetailInfo_price__I_VJn")
+        if price_tag:
+            text = price_tag.get_text()
+            price_match = re.search(r"[\d,]+(?:\.\d+)?", text)
+            if price_match:
+                return float(price_match.group().replace(",", ""))
+        raise PriceScrapingError(error_msg)
+    except requests.RequestException as e:
+        raise PriceScrapingError(f"{error_msg} - Request failed: {e}") from e
 
 
 def get_domestic_gold_price() -> float:
-    url = "https://m.stock.naver.com/marketindex/metals/M04020000"
+    url = NAVER_FINANCE_URLS["domestic_gold"]
     return get_price_from_naver(url, "국내 금 가격 정보를 찾을 수 없습니다.")
 
 
 def get_international_gold_price() -> float:
-    url = "https://m.stock.naver.com/marketindex/metals/GCcv1"
+    url = NAVER_FINANCE_URLS["international_gold"]
     return get_price_from_naver(url, "국제 금 가격 정보를 찾을 수 없습니다.")
 
 
 def get_usd_krw() -> float:
-    url = "https://m.stock.naver.com/marketindex/exchange/FX_USDKRW"
+    url = NAVER_FINANCE_URLS["usd_krw"]
     return get_price_from_naver(url, "환율 정보를 찾을 수 없습니다.")
 
 
