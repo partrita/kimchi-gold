@@ -2,13 +2,9 @@ import csv
 from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple
-from kimchi_gold.now_price import calc_kimchi_premium
 
-CURRENT_DIR: Path = Path(__file__).resolve().parent
-ROOT_DIR: Path = CURRENT_DIR.parent.parent  # 루트 폴더
-DATA_DIR: Path = ROOT_DIR / "data"
-DATA_DIR.mkdir(parents=True, exist_ok=True)
-DATA_FILE: Path = DATA_DIR / "kimchi_gold_price_log.csv"
+from kimchi_gold.now_price import calc_kimchi_premium
+from kimchi_gold.config import DATA_FILE, logger
 
 
 def is_today_logged(filename: Path) -> bool:
@@ -46,7 +42,7 @@ def write_to_csv(row: List[str], filename: Path = DATA_FILE) -> None:
 
 def collect_data() -> None:
     if is_today_logged(DATA_FILE):
-        print("오늘 데이터가 이미 존재합니다. 수집을 중단합니다.")
+        logger.info("오늘 데이터가 이미 존재합니다. 수집을 중단합니다.")
         return
     try:
         result: Tuple[float, float, float, float, float, float] = calc_kimchi_premium()
@@ -61,9 +57,9 @@ def collect_data() -> None:
             f"{premium:.2f}",
         ]
         write_to_csv(row)
-        print(f"수집 완료: {row}")
+        logger.info(f"수집 완료: {row}")
     except Exception as e:
-        print(f"수집 실패: {e}")
+        logger.error(f"수집 실패: {e}")
 
 
 if __name__ == "__main__":

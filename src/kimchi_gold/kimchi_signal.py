@@ -1,12 +1,7 @@
 import pandas as pd
-from pathlib import Path
 from datetime import datetime, timedelta
 
-CURRENT_DIR: Path = Path(__file__).resolve().parent
-ROOT_DIR: Path = CURRENT_DIR.parent.parent  # 루트 폴더
-DATA_DIR: Path = ROOT_DIR / "data"
-DATA_DIR.mkdir(parents=True, exist_ok=True)
-DATA_FILE: Path = DATA_DIR / "kimchi_gold_price_log.csv"
+from kimchi_gold.config import DATA_FILE, logger
 
 def is_outlier(df: pd.DataFrame, column: str) -> bool:
     """
@@ -23,12 +18,15 @@ def is_outlier(df: pd.DataFrame, column: str) -> bool:
     if df.empty:
         return False
 
-    df['날짜'] = pd.to_datetime(df['날짜'])
-    today = datetime.now().date()
-    one_year_ago = today - timedelta(days=365)
-    recent_year_data = df[(df['날짜'].dt.date >= one_year_ago) & (df['날짜'].dt.date <= today)].copy()
+    df['날짜'] = pd.to_datetime(df['날짜']).dt.strftime('%Y-%m-%d')
+    df = df.sort_values(by='날짜').reset_index(drop=True)
+    today_str = datetime.now().strftime('%Y-%m-%d')
+    one_year_ago = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
+    
+    recent_year_data = df[(df['날짜'] >= one_year_ago) & (df['날짜'] <= today_str)].copy()
 
-    if recent_year_data.empty:
+    if recent_year_data.empty or recent_year_data.iloc[-1]['날짜'] != today_str:
+        logger.warning("오늘 데이터가 없습니다.")
         return False
 
     Q1 = recent_year_data[column].quantile(0.25)
@@ -37,7 +35,7 @@ def is_outlier(df: pd.DataFrame, column: str) -> bool:
     lower_bound = Q1 - 1.5 * IQR
     upper_bound = Q3 + 1.5 * IQR
 
-    latest_value = recent_year_data.iloc[-1][column] #가장 최근 데이터가 오늘 데이터라고 가정
+    latest_value = recent_year_data.iloc[-1][column]
 
     return (latest_value < lower_bound) or (latest_value > upper_bound)
 
@@ -50,10 +48,10 @@ def check_kimchi_premium_outlier():
         df = pd.read_csv(DATA_FILE)
         return is_outlier(df, '김치프리미엄(%)')
     except FileNotFoundError:
-        print(f"Error: 파일 '{DATA_FILE}'을 찾을 수 없습니다.")
+        logger.error(f"Error: 파일 '{DATA_FILE}'을 찾을 수 없습니다.")
         return False
     except Exception as e:
-        print(f"Error during data processing: {e}")
+        logger.error(f"Error during data processing: {e}")
         return False
 
 if __name__ == "__main__":

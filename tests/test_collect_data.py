@@ -84,10 +84,9 @@ def test_write_to_csv_existing_file(tmp_path):
 
 
 @patch("kimchi_gold.collect_price.is_today_logged", return_value=True)
-def test_collect_data_already_logged(mock_logged, capsys):
+def test_collect_data_already_logged(mock_logged, caplog):
     collect_data()
-    captured = capsys.readouterr()
-    assert "오늘 데이터가 이미 존재합니다. 수집을 중단합니다." in captured.out
+    assert "오늘 데이터가 이미 존재합니다. 수집을 중단합니다." in caplog.text
     mock_logged.assert_called_once()
 
 
@@ -95,9 +94,8 @@ def test_collect_data_already_logged(mock_logged, capsys):
     "kimchi_gold.collect_price.calc_kimchi_premium", side_effect=ValueError("API Error")
 )
 @patch("kimchi_gold.collect_price.is_today_logged", return_value=False)
-def test_collect_data_failure(mock_logged, mock_premium, capsys):
+def test_collect_data_failure(mock_logged, mock_premium, caplog):
     collect_data()
-    captured = capsys.readouterr()
-    assert "수집 실패: API Error" in captured.out
+    assert "수집 실패: API Error" in caplog.text
     mock_logged.assert_called_once()
     mock_premium.assert_called_once()

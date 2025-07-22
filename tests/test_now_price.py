@@ -7,7 +7,7 @@ MOCK_INTERNATIONAL_PRICE_TEXT = "1,999.99"
 MOCK_USD_KRW_TEXT = "1,355.67"
 
 
-def test_get_price_from_naver_success():
+def test_get_price_from_naver_finance_success():
     url = "http://example.com"
     error_msg = "테스트 에러 메시지"
 
@@ -27,7 +27,7 @@ def test_get_price_from_naver_success():
             MOCK_DOMESTIC_PRICE_TEXT
         )
 
-        price = now_price.get_price_from_naver(url, error_msg)
+        price = now_price.get_price_from_naver_finance(url, error_msg)
         assert price == float(MOCK_DOMESTIC_PRICE_TEXT.replace(",", ""))
         mock_get.assert_called_once_with(url, headers=now_price.HEADERS)
         mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
@@ -36,7 +36,7 @@ def test_get_price_from_naver_success():
         )
 
 
-def test_get_price_from_naver_no_price_tag():
+def test_get_price_from_naver_finance_no_price_tag():
     url = "http://example.com"
     error_msg = "테스트 에러 메시지"
 
@@ -55,7 +55,7 @@ def test_get_price_from_naver_no_price_tag():
         mock_soup_instance.find.return_value = None
 
         with pytest.raises(ValueError) as excinfo:
-            now_price.get_price_from_naver(url, error_msg)
+            now_price.get_price_from_naver_finance(url, error_msg)
         assert str(excinfo.value) == error_msg
         mock_get.assert_called_once_with(url, headers=now_price.HEADERS)
         mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
@@ -64,7 +64,7 @@ def test_get_price_from_naver_no_price_tag():
         )
 
 
-def test_get_price_from_naver_no_price_in_text():
+def test_get_price_from_naver_finance_no_price_in_text():
     url = "http://example.com"
     error_msg = "테스트 에러 메시지"
 
@@ -83,7 +83,7 @@ def test_get_price_from_naver_no_price_in_text():
         mock_soup_instance.find.return_value.get_text.return_value = "문자열"
 
         with pytest.raises(ValueError) as excinfo:
-            now_price.get_price_from_naver(url, error_msg)
+            now_price.get_price_from_naver_finance(url, error_msg)
         assert str(excinfo.value) == error_msg
         mock_get.assert_called_once_with(url, headers=now_price.HEADERS)
         mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
@@ -92,7 +92,7 @@ def test_get_price_from_naver_no_price_in_text():
         )
 
 
-@patch("kimchi_gold.now_price.get_price_from_naver")
+@patch("kimchi_gold.now_price.get_price_from_naver_finance")
 def test_get_domestic_gold_price_success(mock_get_price):
     mock_get_price.return_value = float(MOCK_DOMESTIC_PRICE_TEXT.replace(",", ""))
     price = now_price.get_domestic_gold_price()
@@ -103,7 +103,7 @@ def test_get_domestic_gold_price_success(mock_get_price):
     )
 
 
-@patch("kimchi_gold.now_price.get_price_from_naver")
+@patch("kimchi_gold.now_price.get_price_from_naver_finance")
 def test_get_international_gold_price_success(mock_get_price):
     mock_get_price.return_value = float(MOCK_INTERNATIONAL_PRICE_TEXT.replace(",", ""))
     price = now_price.get_international_gold_price()
@@ -114,7 +114,7 @@ def test_get_international_gold_price_success(mock_get_price):
     )
 
 
-@patch("kimchi_gold.now_price.get_price_from_naver")
+@patch("kimchi_gold.now_price.get_price_from_naver_finance")
 def test_get_usd_krw_success(mock_get_price):
     mock_get_price.return_value = float(MOCK_USD_KRW_TEXT.replace(",", ""))
     price = now_price.get_usd_krw()

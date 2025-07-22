@@ -14,7 +14,7 @@ HEADERS: Dict[str, str] = {
 }
 
 
-def get_price_from_naver(
+def get_price_from_naver_finance(
     url: str, error_msg: str, regex: str = r"[\d,]+(?:\.\d+)?"
 ) -> float:
     """
@@ -33,17 +33,17 @@ def get_price_from_naver(
 
 def get_domestic_gold_price() -> float:
     url = "https://m.stock.naver.com/marketindex/metals/M04020000"
-    return get_price_from_naver(url, "국내 금 가격 정보를 찾을 수 없습니다.")
+    return get_price_from_naver_finance(url, "국내 금 가격 정보를 찾을 수 없습니다.")
 
 
 def get_international_gold_price() -> float:
     url = "https://m.stock.naver.com/marketindex/metals/GCcv1"
-    return get_price_from_naver(url, "국제 금 가격 정보를 찾을 수 없습니다.")
+    return get_price_from_naver_finance(url, "국제 금 가격 정보를 찾을 수 없습니다.")
 
 
 def get_usd_krw() -> float:
     url = "https://m.stock.naver.com/marketindex/exchange/FX_USDKRW"
-    return get_price_from_naver(url, "환율 정보를 찾을 수 없습니다.")
+    return get_price_from_naver_finance(url, "환율 정보를 찾을 수 없습니다.")
 
 
 def calc_kimchi_premium() -> Tuple[float, float, float, float, float, float]:
