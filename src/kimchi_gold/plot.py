@@ -147,7 +147,7 @@ def plot_gold_prices(ax: Axes, df: pd.DataFrame, months: int) -> None:
 
 def plot_exchange_rate(ax: Axes, df: pd.DataFrame, months: int) -> None:
     """
-    환율(원/달러) 데이터를 선 그래프로 그리는 함수입니다.
+    환율(달러/원) 데이터를 선 그래프로 그리는 함수입니다.
 
     Args:
         ax (Axes): 그래프를 그릴 Matplotlib Axes 객체.
@@ -156,12 +156,12 @@ def plot_exchange_rate(ax: Axes, df: pd.DataFrame, months: int) -> None:
     """
     ax.plot(
         df.index,
-        df["환율(원/달러)"],
-        label="Exchange Rate (KRW/USD)",
+        1 / df["환율(원/달러)"],
+        label="Exchange Rate (USD/KRW)",
         color="purple",
         marker="^",
     )
-    ax.set_ylabel("Exchange Rate (KRW/USD)")
+    ax.set_ylabel("Exchange Rate (USD/KRW)")
     ax.set_title(f"Recent {months} Months: Exchange Rate Trend")
     ax.legend()
     ax.tick_params(axis="x", rotation=45)
