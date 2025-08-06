@@ -96,7 +96,7 @@ def plot_kimchi_premium(ax: Axes, df: pd.DataFrame, months: int) -> None:
         label="Kimchi Premium (%)",  # 범례에 표시될 레이블
         color="red",  # 선 색깔
         linestyle="--",  # 선 스타일 (dashed)
-        marker="d",  # 데이터 포인트 마커 (diamond)
+        marker="o",  # 데이터 포인트 마커 (diamond)
     )
     ax.set_ylabel("Kimchi Premium (%)")  # y축 레이블 설정
     ax.set_title(f"Recent {months} Months: Kimchi Premium (%)")  # 그래프 제목 설정
@@ -156,12 +156,12 @@ def plot_exchange_rate(ax: Axes, df: pd.DataFrame, months: int) -> None:
     """
     ax.plot(
         df.index,
-        1 / df["환율(원/달러)"],
-        label="Exchange Rate (USD/KRW)",
+        df["환율(원/달러)"],
+        label="Exchange Rate (KRW/USD)",
         color="purple",
-        marker="^",
+        marker="o",
     )
-    ax.set_ylabel("Exchange Rate (USD/KRW)")
+    ax.set_ylabel("Exchange Rate (KRW/USD)")
     ax.set_title(f"Recent {months} Months: Exchange Rate Trend")
     ax.legend()
     ax.tick_params(axis="x", rotation=45)
