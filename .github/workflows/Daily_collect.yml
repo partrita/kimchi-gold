@@ -25,13 +25,13 @@ jobs:
 
       - name: Run data collector and chart generator
         run: |
-          uv run python src/kimchi_gold/data_collector.py
-          uv run python src/kimchi_gold/chart_generator.py
+          uv run python -m kimchi_gold.data_collector
+          uv run python -m kimchi_gold.chart_generator
 
       - name: Run outlier analyzer script and get result
         id: run_python
         run: |
-          output=$(uv run python src/kimchi_gold/outlier_analyzer.py)
+          output=$(uv run python -m kimchi_gold.outlier_analyzer)
           result=$(echo "$output" | head -1)
           echo "result=$result" >> $GITHUB_OUTPUT
           echo "Python script result: $result"
