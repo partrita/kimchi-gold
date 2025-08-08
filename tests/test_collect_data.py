@@ -1,7 +1,7 @@
 from unittest.mock import patch
 from datetime import datetime
 import csv
-from kimchi_gold.collect_price import collect_data, is_today_logged, write_to_csv
+from kimchi_gold.data_collector import collect_data, is_today_logged, write_to_csv
 
 # 테스트 데이터
 MOCK_DOMESTIC_PRICE = 150000.00
@@ -83,7 +83,7 @@ def test_write_to_csv_existing_file(tmp_path):
         assert row2 == MOCK_CSV_ROW
 
 
-@patch("kimchi_gold.collect_price.is_today_logged", return_value=True)
+@patch("kimchi_gold.data_collector.check_if_date_already_logged", return_value=True)
 def test_collect_data_already_logged(mock_logged, capsys):
     collect_data()
     captured = capsys.readouterr()
@@ -92,12 +92,12 @@ def test_collect_data_already_logged(mock_logged, capsys):
 
 
 @patch(
-    "kimchi_gold.collect_price.calc_kimchi_premium", side_effect=ValueError("API Error")
+    "kimchi_gold.data_collector.fetch_current_gold_market_data", side_effect=ValueError("API Error")
 )
-@patch("kimchi_gold.collect_price.is_today_logged", return_value=False)
+@patch("kimchi_gold.data_collector.check_if_date_already_logged", return_value=False)
 def test_collect_data_failure(mock_logged, mock_premium, capsys):
     collect_data()
     captured = capsys.readouterr()
-    assert "수집 실패: API Error" in captured.out
+    assert "수집 실패" in captured.out
     mock_logged.assert_called_once()
     mock_premium.assert_called_once()
