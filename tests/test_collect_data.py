@@ -88,7 +88,8 @@ def test_collect_data_already_logged(mock_logged, capsys):
     collect_data()
     captured = capsys.readouterr()
     assert "오늘 데이터가 이미 존재합니다. 수집을 중단합니다." in captured.out
-    mock_logged.assert_called_once()
+    # collect_data() calls check_if_date_already_logged twice: once in collect_and_save_current_gold_market_data and once directly
+    assert mock_logged.call_count == 2
 
 
 @patch(
