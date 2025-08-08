@@ -15,7 +15,8 @@ dependencies = [
 ]
 
 [project.scripts]
-kimchi-gold = "kimchi_gold.now_price:calc_kimchi_premium"
+#kimchi-gold = "kimchi_gold.now_price:calc_kimchi_premium"
+check = "kimchi_gold.now_price:main"
 
 [build-system]
 requires = ["hatchling"]
