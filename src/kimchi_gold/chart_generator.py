@@ -13,16 +13,15 @@ from matplotlib.figure import Figure
 from .configuration import (
     DATA_STORAGE_DIRECTORY,
     DEFAULT_CHART_DISPLAY_MONTHS,
-    CHART_OUTPUT_FILE_NAME
+    CHART_OUTPUT_FILE_NAME,
 )
-from .data_models import ChartGenerationConfiguration
 
 
 class GoldPriceChartConfiguration:
     """
     애플리케이션의 차트 생성 설정을 관리하는 클래스입니다.
     """
-    
+
     display_period_months: int = DEFAULT_CHART_DISPLAY_MONTHS
     source_data_file_name: str = "kimchi_gold_price_log.csv"
     output_chart_file_name: str = CHART_OUTPUT_FILE_NAME
@@ -32,17 +31,20 @@ class ChartFilePaths:
     """
     차트 생성에 필요한 파일 경로들을 관리하는 클래스입니다.
     """
-    
+
     current_script_directory: Path = Path(__file__).resolve().parent
     project_root_directory: Path = current_script_directory.parent.parent
     data_storage_directory: Path = DATA_STORAGE_DIRECTORY
-    source_data_csv_file: Path = data_storage_directory / GoldPriceChartConfiguration.source_data_file_name
-    output_chart_image_file: Path = data_storage_directory / GoldPriceChartConfiguration.output_chart_file_name
+    source_data_csv_file: Path = (
+        data_storage_directory / GoldPriceChartConfiguration.source_data_file_name
+    )
+    output_chart_image_file: Path = (
+        data_storage_directory / GoldPriceChartConfiguration.output_chart_file_name
+    )
 
 
 def load_and_preprocess_gold_price_data(
-    source_csv_file_path: Path, 
-    analysis_period_months: int
+    source_csv_file_path: Path, analysis_period_months: int
 ) -> pd.DataFrame:
     """
     CSV 파일에서 데이터를 읽어오고, 날짜 형식으로 변환한 뒤,
@@ -70,19 +72,19 @@ def load_and_preprocess_gold_price_data(
 
     current_date = datetime.now().date()
     cutoff_date = current_date - timedelta(days=analysis_period_months * 30)
-    
+
     filtered_period_data = historical_data_df[historical_data_df.index >= cutoff_date]
 
     if filtered_period_data.empty:
-        raise ValueError(f"No data available for the last {analysis_period_months} months.")
+        raise ValueError(
+            f"No data available for the last {analysis_period_months} months."
+        )
 
     return filtered_period_data
 
 
 def generate_kimchi_premium_chart(
-    chart_axes: Axes, 
-    chart_data_df: pd.DataFrame, 
-    display_period_months: int
+    chart_axes: Axes, chart_data_df: pd.DataFrame, display_period_months: int
 ) -> None:
     """
     김치 프리미엄(%) 데이터를 선 그래프로 그리는 함수입니다.
@@ -110,9 +112,7 @@ def generate_kimchi_premium_chart(
 
 
 def generate_gold_prices_comparison_chart(
-    chart_axes: Axes, 
-    chart_data_df: pd.DataFrame, 
-    display_period_months: int
+    chart_axes: Axes, chart_data_df: pd.DataFrame, display_period_months: int
 ) -> None:
     """
     국내 금 가격과 국제 금 가격 (환율 조정) 데이터를 선 그래프로 그리는 함수입니다.
@@ -128,14 +128,14 @@ def generate_gold_prices_comparison_chart(
         label="Domestic Gold (KRW/g)",
         marker="o",
     )
-    
+
     # 국제 금 가격을 원/g 단위로 환산
     international_gold_price_krw_per_gram = (
-        chart_data_df["국제금(달러/온스)"] 
-        * (1 / 31.1035) 
+        chart_data_df["국제금(달러/온스)"]
+        * (1 / 31.1035)
         * chart_data_df["환율(원/달러)"]
     )
-    
+
     chart_axes.plot(
         chart_data_df.index,
         international_gold_price_krw_per_gram,
@@ -143,7 +143,9 @@ def generate_gold_prices_comparison_chart(
         marker="x",
     )
     chart_axes.set_ylabel("Price (KRW/g)")
-    chart_axes.set_title(f"Recent {display_period_months} Months: Domestic vs International Gold Price")
+    chart_axes.set_title(
+        f"Recent {display_period_months} Months: Domestic vs International Gold Price"
+    )
     chart_axes.legend()
     chart_axes.tick_params(axis="x", rotation=45)
     chart_axes.xaxis.set_major_locator(mdates.AutoDateLocator())
@@ -152,9 +154,7 @@ def generate_gold_prices_comparison_chart(
 
 
 def generate_exchange_rate_trend_chart(
-    chart_axes: Axes, 
-    chart_data_df: pd.DataFrame, 
-    display_period_months: int
+    chart_axes: Axes, chart_data_df: pd.DataFrame, display_period_months: int
 ) -> None:
     """
     환율(달러/원) 데이터를 선 그래프로 그리는 함수입니다.
@@ -189,8 +189,8 @@ def create_comprehensive_gold_price_charts():
 
     try:
         filtered_historical_data = load_and_preprocess_gold_price_data(
-            ChartFilePaths.source_data_csv_file, 
-            GoldPriceChartConfiguration.display_period_months
+            ChartFilePaths.source_data_csv_file,
+            GoldPriceChartConfiguration.display_period_months,
         )
     except FileNotFoundError as file_error:
         print(file_error)
@@ -200,26 +200,26 @@ def create_comprehensive_gold_price_charts():
         return
 
     plt.style.use("seaborn-v0_8-whitegrid")
-    
+
     chart_figure: Figure
     chart_axes_list: list[Axes]
     chart_figure, chart_axes_list = plt.subplots(nrows=3, ncols=1, figsize=(12, 15))
     plt.subplots_adjust(hspace=0.5)
 
     generate_kimchi_premium_chart(
-        chart_axes_list[0], 
-        filtered_historical_data, 
-        GoldPriceChartConfiguration.display_period_months
+        chart_axes_list[0],
+        filtered_historical_data,
+        GoldPriceChartConfiguration.display_period_months,
     )
     generate_gold_prices_comparison_chart(
-        chart_axes_list[1], 
-        filtered_historical_data, 
-        GoldPriceChartConfiguration.display_period_months
+        chart_axes_list[1],
+        filtered_historical_data,
+        GoldPriceChartConfiguration.display_period_months,
     )
     generate_exchange_rate_trend_chart(
-        chart_axes_list[2], 
-        filtered_historical_data, 
-        GoldPriceChartConfiguration.display_period_months
+        chart_axes_list[2],
+        filtered_historical_data,
+        GoldPriceChartConfiguration.display_period_months,
     )
 
     plt.tight_layout()

@@ -93,7 +93,8 @@ def test_collect_data_already_logged(mock_logged, capsys):
 
 
 @patch(
-    "kimchi_gold.data_collector.fetch_current_gold_market_data", side_effect=ValueError("API Error")
+    "kimchi_gold.data_collector.fetch_current_gold_market_data",
+    side_effect=ValueError("API Error"),
 )
 @patch("kimchi_gold.data_collector.check_if_date_already_logged", return_value=False)
 def test_collect_data_failure(mock_logged, mock_premium, capsys):

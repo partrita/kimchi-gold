@@ -45,7 +45,9 @@ TROY_OUNCE_TO_GRAM_CONVERSION_RATE = 31.1035
 
 # 시각화 설정
 DEFAULT_CHART_DISPLAY_MONTHS = 12
-CHART_OUTPUT_FILE_NAME = f"kimchi_gold_price_recent_{DEFAULT_CHART_DISPLAY_MONTHS}months.png"
+CHART_OUTPUT_FILE_NAME = (
+    f"kimchi_gold_price_recent_{DEFAULT_CHART_DISPLAY_MONTHS}months.png"
+)
 
 # 하위 호환성을 위한 별칭들
 DATA_FILE = GOLD_PRICE_DATA_CSV_FILE

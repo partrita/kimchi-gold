@@ -29,7 +29,9 @@ def test_get_price_from_naver_success():
 
         price = price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert price == float(MOCK_DOMESTIC_PRICE_TEXT.replace(",", ""))
-        mock_get.assert_called_once_with(url, headers=price_fetcher.REQUEST_HEADERS, timeout=10)
+        mock_get.assert_called_once_with(
+            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10
+        )
         mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
         mock_soup_instance.find.assert_called_once_with(
             "strong", class_="DetailInfo_price__I_VJn"
@@ -57,7 +59,9 @@ def test_get_price_from_naver_no_price_tag():
         with pytest.raises(ValueError) as excinfo:
             price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert str(excinfo.value) == error_msg
-        mock_get.assert_called_once_with(url, headers=price_fetcher.REQUEST_HEADERS, timeout=10)
+        mock_get.assert_called_once_with(
+            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10
+        )
         mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
         mock_soup_instance.find.assert_called_once_with(
             "strong", class_="DetailInfo_price__I_VJn"
@@ -85,7 +89,9 @@ def test_get_price_from_naver_no_price_in_text():
         with pytest.raises(ValueError) as excinfo:
             price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert str(excinfo.value) == error_msg
-        mock_get.assert_called_once_with(url, headers=price_fetcher.REQUEST_HEADERS, timeout=10)
+        mock_get.assert_called_once_with(
+            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10
+        )
         mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
         mock_soup_instance.find.assert_called_once_with(
             "strong", class_="DetailInfo_price__I_VJn"

@@ -10,19 +10,22 @@ from typing import List
 @dataclass
 class GoldPriceData:
     """금 가격 관련 데이터를 담는 데이터 클래스"""
-    domestic_price: float           # 국내 금 가격 (원/g)
-    international_price: float      # 국제 금 가격 (달러/온스)
-    usd_krw_rate: float            # 환율 (원/달러)
+
+    domestic_price: float  # 국내 금 가격 (원/g)
+    international_price: float  # 국제 금 가격 (달러/온스)
+    usd_krw_rate: float  # 환율 (원/달러)
     international_krw_per_g: float  # 국제 금 가격을 원/g으로 환산
-    kimchi_premium_amount: float    # 김치 프리미엄 금액 (원/g)
-    kimchi_premium_percent: float   # 김치 프리미엄 비율 (%)
+    kimchi_premium_amount: float  # 김치 프리미엄 금액 (원/g)
+    kimchi_premium_percent: float  # 김치 프리미엄 비율 (%)
     data_collection_timestamp: datetime = None  # 데이터 수집 시간
 
     def __post_init__(self):
         if self.data_collection_timestamp is None:
             self.data_collection_timestamp = datetime.now()
 
-    def convert_to_csv_row_format(self, date_string_format: str = "%Y-%m-%d") -> List[str]:
+    def convert_to_csv_row_format(
+        self, date_string_format: str = "%Y-%m-%d"
+    ) -> List[str]:
         """CSV 파일에 저장할 수 있는 형태의 리스트로 변환"""
         return [
             self.data_collection_timestamp.strftime(date_string_format),
@@ -54,6 +57,7 @@ class GoldPriceData:
 @dataclass
 class ChartGenerationConfiguration:
     """차트 생성 설정을 담는 데이터 클래스"""
+
     display_months: int = 12
     source_data_filename: str = "kimchi_gold_price_log.csv"
     chart_figure_size: tuple = (12, 15)
