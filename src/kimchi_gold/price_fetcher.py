@@ -26,15 +26,15 @@ def extract_price_from_naver_finance(
 ) -> float:
     """
     네이버 금융 페이지에서 가격 정보를 추출하는 공통 함수
-    
+
     Args:
         target_url: 가격 정보를 가져올 네이버 금융 URL
         error_message: 오류 시 표시할 메시지
         price_pattern: 가격 추출을 위한 정규식 패턴
-        
+
     Returns:
         추출된 가격 (float)
-        
+
     Raises:
         requests.RequestException: HTTP 요청 실패 시
         ValueError: 가격 정보를 찾을 수 없을 시
@@ -43,26 +43,26 @@ def extract_price_from_naver_finance(
         logger.debug(f"Fetching price data from {target_url}")
         http_response = requests.get(target_url, headers=REQUEST_HEADERS, timeout=10)
         http_response.raise_for_status()
-        
+
         html_parser = BeautifulSoup(http_response.content, "html.parser")
         price_element = html_parser.find("strong", class_="DetailInfo_price__I_VJn")
-        
+
         if not price_element:
             logger.error(f"Price element not found in {target_url}")
             raise ValueError(error_message)
-            
+
         price_text = price_element.get_text().strip()
         price_match = re.search(price_pattern, price_text)
-        
+
         if not price_match:
             logger.error(f"Price pattern not found in text: {price_text}")
             raise ValueError(error_message)
-            
+
         cleaned_price_string = price_match.group().replace(",", "")
         extracted_price = float(cleaned_price_string)
         logger.debug(f"Extracted price: {extracted_price} from {target_url}")
         return extracted_price
-        
+
     except requests.RequestException as request_error:
         logger.error(f"Request failed for {target_url}: {request_error}")
         raise ValueError(f"{error_message} (네트워크 오류)")
@@ -74,55 +74,52 @@ def extract_price_from_naver_finance(
 def fetch_domestic_gold_price() -> float:
     """국내 금 가격을 가져옵니다 (원/g)"""
     return extract_price_from_naver_finance(
-        NAVER_DOMESTIC_GOLD_URL, 
-        "국내 금 가격 정보를 찾을 수 없습니다."
+        NAVER_DOMESTIC_GOLD_URL, "국내 금 가격 정보를 찾을 수 없습니다."
     )
 
 
 def fetch_international_gold_price() -> float:
     """국제 금 가격을 가져옵니다 (달러/온스)"""
     return extract_price_from_naver_finance(
-        NAVER_INTERNATIONAL_GOLD_URL, 
-        "국제 금 가격 정보를 찾을 수 없습니다."
+        NAVER_INTERNATIONAL_GOLD_URL, "국제 금 가격 정보를 찾을 수 없습니다."
     )
 
 
 def fetch_usd_krw_exchange_rate() -> float:
     """USD/KRW 환율을 가져옵니다"""
     return extract_price_from_naver_finance(
-        NAVER_USD_KRW_EXCHANGE_URL, 
-        "환율 정보를 찾을 수 없습니다."
+        NAVER_USD_KRW_EXCHANGE_URL, "환율 정보를 찾을 수 없습니다."
     )
 
 
 def convert_international_gold_price_to_krw_per_gram(
-    international_price_usd_per_oz: float, 
-    usd_krw_exchange_rate: float
+    international_price_usd_per_oz: float, usd_krw_exchange_rate: float
 ) -> float:
     """
     국제 금 가격을 원/g 단위로 환산합니다.
-    
+
     Args:
         international_price_usd_per_oz: 국제 금 가격 (달러/온스)
         usd_krw_exchange_rate: USD/KRW 환율
-        
+
     Returns:
         원/g 단위로 환산된 국제 금 가격
     """
-    return (international_price_usd_per_oz * usd_krw_exchange_rate) / TROY_OUNCE_TO_GRAM_CONVERSION_RATE
+    return (
+        international_price_usd_per_oz * usd_krw_exchange_rate
+    ) / TROY_OUNCE_TO_GRAM_CONVERSION_RATE
 
 
 def calculate_kimchi_premium_values(
-    domestic_price_krw_per_gram: float, 
-    international_price_krw_per_gram: float
+    domestic_price_krw_per_gram: float, international_price_krw_per_gram: float
 ) -> Tuple[float, float]:
     """
     김치 프리미엄을 계산합니다.
-    
+
     Args:
         domestic_price_krw_per_gram: 국내 금 가격 (원/g)
         international_price_krw_per_gram: 국제 금 가격 (원/g)
-        
+
     Returns:
         (김치 프리미엄 금액, 김치 프리미엄 비율)
     """
@@ -134,31 +131,33 @@ def calculate_kimchi_premium_values(
 def fetch_current_gold_market_data() -> GoldPriceData:
     """
     현재 금 가격 데이터를 수집하고 김치 프리미엄을 계산합니다.
-    
+
     Returns:
         GoldPriceData 객체
-        
+
     Raises:
         ValueError: 데이터 수집 실패 시
     """
     try:
         logger.info("금 가격 데이터 수집 시작")
-        
+
         # 각 가격 정보 수집
         domestic_gold_price = fetch_domestic_gold_price()
         international_gold_price = fetch_international_gold_price()
         current_usd_krw_rate = fetch_usd_krw_exchange_rate()
-        
+
         # 국제 금 가격을 원/g으로 환산
-        international_gold_price_krw_per_gram = convert_international_gold_price_to_krw_per_gram(
-            international_gold_price, current_usd_krw_rate
+        international_gold_price_krw_per_gram = (
+            convert_international_gold_price_to_krw_per_gram(
+                international_gold_price, current_usd_krw_rate
+            )
         )
-        
+
         # 김치 프리미엄 계산
         premium_amount, premium_percentage = calculate_kimchi_premium_values(
             domestic_gold_price, international_gold_price_krw_per_gram
         )
-        
+
         # 데이터 객체 생성
         gold_market_data = GoldPriceData(
             domestic_price=domestic_gold_price,
@@ -168,10 +167,10 @@ def fetch_current_gold_market_data() -> GoldPriceData:
             kimchi_premium_amount=premium_amount,
             kimchi_premium_percent=premium_percentage,
         )
-        
+
         logger.info(f"데이터 수집 완료: 김치 프리미엄 {premium_percentage:.2f}%")
         return gold_market_data
-        
+
     except Exception as collection_error:
         logger.error(f"금 가격 데이터 수집 실패: {collection_error}")
         raise ValueError(f"금 가격 데이터를 가져올 수 없습니다: {collection_error}")
@@ -201,24 +200,36 @@ get_usd_krw_rate = fetch_usd_krw_exchange_rate
 get_usd_krw = fetch_usd_krw_exchange_rate
 
 
+def print_formatted_gold_price(data: GoldPriceData):
+    """
+    GoldPriceData 객체를 받아 보기 좋은 형태로 터미널에 출력합니다.
+    """
+    print("--- 현재 금 시세 ---")
+    print(f"  - 국내 금 시세 (원/g): {data.domestic_price:,.2f} 원")
+    print(f"  - 국제 금 시세 ($/oz): {data.international_price:,.2f} $")
+    print(f"  - 환율 (USD/KRW): {data.usd_krw_rate:,.2f} 원")
+    print("-" * 20)
+    print(f"  -> 국제 금 시세 (원/g 환산): {data.international_krw_per_g:,.2f} 원")
+    print(
+        f"  -> 김치 프리미엄: {data.kimchi_premium_amount:,.2f} 원 ({data.kimchi_premium_percent:.2f}%)"
+    )
+    print("--------------------")
+
+
 def main():
     """
     메인 실행 함수 - 현재 금 가격과 김치 프리미엄을 출력합니다.
     """
     try:
         # 로깅 설정 (콘솔 출력용)
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
-        
+
         current_gold_data = fetch_current_gold_market_data()
-        print(current_gold_data)
-        
+        print_formatted_gold_price(current_gold_data)
+
     except Exception as main_error:
         print(f"오류 발생: {main_error}")
         return 1
-    
+
     return 0
 
 

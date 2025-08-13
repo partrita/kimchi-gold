@@ -3,27 +3,19 @@ name = "kimchi-gold"
 version = "0.1.0"
 description = "The script calculates the Kimchi premium for KRX gold prices."
 readme = "README.md"
-authors = [
-    { name = "deepthough", email = "deepthought@postech.ac.kr" }
-]
+authors = [{ name = "deepthough", email = "deepthought@postech.ac.kr" }]
 requires-python = ">=3.11"
 dependencies = [
-    "beautifulsoup4>=4.13.4",
-    "matplotlib>=3.10.1",
-    "pandas>=2.2.3",
-    "requests>=2.32.3",
+	"beautifulsoup4>=4.13.4",
+	"matplotlib>=3.10.1",
+	"pandas>=2.2.3",
+	"pytest>=8.3.5",
+	"requests>=2.32.3",
 ]
 
 [project.scripts]
-#kimchi-gold = "kimchi_gold.now_price:calc_kimchi_premium"
-check = "kimchi_gold.now_price:main"
+check = "kimchi_gold.price_fetcher:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-[dependency-groups]
-dev = [
-    "pytest>=8.3.5",
-    "python-dotenv>=1.1.0",
-]
