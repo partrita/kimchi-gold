@@ -39,36 +39,16 @@ def extract_price_from_naver_finance(
         requests.RequestException: HTTP 요청 실패 시
         ValueError: 가격 정보를 찾을 수 없을 시
     """
-    try:
-        logger.debug(f"Fetching price data from {target_url}")
-        http_response = requests.get(target_url, headers=REQUEST_HEADERS, timeout=10)
-        http_response.raise_for_status()
-
-        html_parser = BeautifulSoup(http_response.content, "html.parser")
-        price_element = html_parser.find("strong", class_="DetailInfo_price__I_VJn")
-
-        if not price_element:
-            logger.error(f"Price element not found in {target_url}")
-            raise ValueError(error_message)
-
-        price_text = price_element.get_text().strip()
-        price_match = re.search(price_pattern, price_text)
-
-        if not price_match:
-            logger.error(f"Price pattern not found in text: {price_text}")
-            raise ValueError(error_message)
-
-        cleaned_price_string = price_match.group().replace(",", "")
-        extracted_price = float(cleaned_price_string)
-        logger.debug(f"Extracted price: {extracted_price} from {target_url}")
-        return extracted_price
-
-    except requests.RequestException as request_error:
-        logger.error(f"Request failed for {target_url}: {request_error}")
-        raise ValueError(f"{error_message} (네트워크 오류)")
-    except (ValueError, AttributeError) as parsing_error:
-        logger.error(f"Data parsing failed for {target_url}: {parsing_error}")
-        raise ValueError(error_message)
+    response = requests.get(target_url, headers=REQUEST_HEADERS)
+    response.raise_for_status()  # Raise an exception for bad status codes
+    soup = BeautifulSoup(response.content, "html.parser")
+    price_tag = soup.find("strong", class_="DetailInfo_price__v_j1V") # manually modified
+    if price_tag:
+        text = price_tag.get_text()
+        price_match = re.search(price_pattern, text)
+        if price_match:
+            return float(price_match.group().replace(",", ""))
+    raise ValueError(error_message)
 
 
 def fetch_domestic_gold_price() -> float:
