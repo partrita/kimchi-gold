@@ -39,10 +39,10 @@ def extract_price_from_naver_finance(
         requests.RequestException: HTTP 요청 실패 시
         ValueError: 가격 정보를 찾을 수 없을 시
     """
-    response = requests.get(target_url, headers=REQUEST_HEADERS)
+    response = requests.get(target_url, headers=REQUEST_HEADERS, timeout=10)
     response.raise_for_status()  # Raise an exception for bad status codes
     soup = BeautifulSoup(response.content, "html.parser")
-    price_tag = soup.find("strong", class_="DetailInfo_price__v_j1V") # manually modified
+    price_tag = soup.find("strong", class_="DetailInfo_price__I_VJn")
     if price_tag:
         text = price_tag.get_text()
         price_match = re.search(price_pattern, text)
