@@ -42,7 +42,9 @@ def extract_price_from_naver_finance(
     response = requests.get(target_url, headers=REQUEST_HEADERS, timeout=10)
     response.raise_for_status()  # Raise an exception for bad status codes
     soup = BeautifulSoup(response.content, "html.parser")
-    price_tag = soup.find("strong", class_="DetailInfo_price__I_VJn")
+    
+    # Find element with class containing "DetailInfo_price"
+    price_tag = soup.find("strong", class_=lambda class_name: class_name and "DetailInfo_price" in class_name)
     if price_tag:
         text = price_tag.get_text()
         price_match = re.search(price_pattern, text)
