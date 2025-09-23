@@ -114,3 +114,30 @@ on:
 * [https://ecos.bok.or.kr/api/#/DevGuide/StatisticalCodeSearch](https://ecos.bok.or.kr/api/#/DevGuide/StatisticalCodeSearch)
 * [https://docs.outcode.biz/tutorials/api/gold](https://docs.outcode.biz/tutorials/api/gold)
 * [http://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201060201](http://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201060201)
+
+# Backtesting
+
+## How to use
+
+```bash
+# Run with default parameters
+uv run backtest
+
+# Set a custom start date
+uv run backtest --start-date 2023-01-01
+
+# Customize thresholds
+uv run backtest --buy-threshold -2.0 --sell-threshold 2.0
+
+# Combine parameters
+uv run backtest --start-date 2020-01-01 --buy-threshold -2.5 --sell-threshold 2.5
+
+# Get help
+uv run backtest --help
+```
+
+## 🎯 전략 로직
+
+- 매수: 괴리율 ≤ -3.0% (또는 설정한 buy_threshold)
+- 매도: 괴리율 ≥ +3.0% (또는 설정한 sell_threshold)
+- 재매수: 매도 후 괴리율이 -0.16% ~ +0.16% 범위 내로 안정화되면 다시 매수
