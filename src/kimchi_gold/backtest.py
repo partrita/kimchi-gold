@@ -46,6 +46,16 @@ def run_backtest(data, initial_investment=1000000, start_date=None, buy_threshol
     current_cash = initial_investment  # 현재 현금
     total_trades = 0  # 총 거래 횟수
 
+    # 시작 날짜에 무조건 매수 실행
+    if len(data) > 0 and current_cash > 0:
+        data.loc[0, "position"] = 1
+        buy_price = data.loc[0, "krx_gold"] * (1 + slippage_rate + commission_rate)
+        gold_quantity = current_cash / buy_price  # 구매 가능한 금 수량
+        current_cash = 0  # 전액 투자
+        total_trades += 1
+        data.loc[0, "portfolio_value"] = float(gold_quantity * data.loc[0, "krx_gold"])
+        print(f"시작일 매수: {data.loc[0, 'date']}, 가격: {buy_price:.2f}원/g, 수량: {gold_quantity:.2f}g, 괴리율: {data.loc[0, 'disparity']:.2f}%")
+
     # 백테스팅 루프
     for i in range(1, len(data)):
         # 매수 조건 1: 일반 매수 (괴리율이 buy_threshold 이하)
