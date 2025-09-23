@@ -15,6 +15,7 @@ dependencies = [
 
 [project.scripts]
 check = "kimchi_gold.price_fetcher:main"
+backtest = "kimchi_gold.backtest:main"
 
 [build-system]
 requires = ["hatchling"]
