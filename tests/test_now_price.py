@@ -33,9 +33,11 @@ def test_get_price_from_naver_success():
             url, headers=price_fetcher.REQUEST_HEADERS, timeout=10
         )
         mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
-        mock_soup_instance.find.assert_called_once_with(
-            "strong", class_="DetailInfo_price__I_VJn"
-        )
+        # class_ 파라미터가 람다 함수이므로 호출 여부만 확인
+        mock_soup_instance.find.assert_called_once()
+        call_args = mock_soup_instance.find.call_args
+        assert call_args[0][0] == "strong"  # 첫 번째 인자가 "strong"인지 확인
+        assert "class_" in call_args[1]  # class_ 키워드 인자가 있는지 확인
 
 
 def test_get_price_from_naver_no_price_tag():
@@ -63,9 +65,11 @@ def test_get_price_from_naver_no_price_tag():
             url, headers=price_fetcher.REQUEST_HEADERS, timeout=10
         )
         mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
-        mock_soup_instance.find.assert_called_once_with(
-            "strong", class_="DetailInfo_price__I_VJn"
-        )
+        # class_ 파라미터가 람다 함수이므로 호출 여부만 확인
+        mock_soup_instance.find.assert_called_once()
+        call_args = mock_soup_instance.find.call_args
+        assert call_args[0][0] == "strong"  # 첫 번째 인자가 "strong"인지 확인
+        assert "class_" in call_args[1]  # class_ 키워드 인자가 있는지 확인
 
 
 def test_get_price_from_naver_no_price_in_text():
@@ -93,9 +97,11 @@ def test_get_price_from_naver_no_price_in_text():
             url, headers=price_fetcher.REQUEST_HEADERS, timeout=10
         )
         mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
-        mock_soup_instance.find.assert_called_once_with(
-            "strong", class_="DetailInfo_price__I_VJn"
-        )
+        # class_ 파라미터가 람다 함수이므로 호출 여부만 확인
+        mock_soup_instance.find.assert_called_once()
+        call_args = mock_soup_instance.find.call_args
+        assert call_args[0][0] == "strong"  # 첫 번째 인자가 "strong"인지 확인
+        assert "class_" in call_args[1]  # class_ 키워드 인자가 있는지 확인
 
 
 @patch("kimchi_gold.price_fetcher.extract_price_from_naver_finance")
