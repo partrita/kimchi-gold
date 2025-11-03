@@ -26,10 +26,11 @@ jobs:
       - name: Install the project
         run: uv sync --locked --all-extras --dev
 
-      - name: Run data collector and chart generator
-        run: |
-          uv run python -m kimchi_gold.data_collector
-          uv run python -m kimchi_gold.chart_generator
+      - name: Run data collector
+        run: uv run python -m kimchi_gold.data_collector
+
+      - name: Run data chart generator
+        run: uv run python -m kimchi_gold.chart_generator
 
       - name: Run outlier analyzer script and get result
         id: run_python
