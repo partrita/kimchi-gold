@@ -59,9 +59,9 @@ jobs:
         run: |
           git config --local user.email "deepthough@postech.ac.kr"
           git config --local user.name "Auto_Scraping"
-          git add data/
+          git add data/*.csv data/*.png
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Update scraped data"
+            git commit -m "Update scraped data and charts"
             git push
           else
             echo "No changes to commit in data/. Skipping commit."
