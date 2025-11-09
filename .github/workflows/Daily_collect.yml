@@ -36,6 +36,10 @@ jobs:
         id: run_python
         run: |
           output=$(uv run python -m kimchi_gold.outlier_analyzer)
+          echo "full_output<<EOF" >> $GITHUB_OUTPUT
+          echo "$output" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          # The first line of output is still 'True' or 'False'
           result=$(echo "$output" | head -1)
           echo "result=$result" >> $GITHUB_OUTPUT
           echo "Python script result: $result"
@@ -48,11 +52,17 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const fullOutput = `${{ steps.run_python.outputs.full_output }}`;
+            const lines = fullOutput.split('\n').filter(line => line.trim() !== '');
+            // The first line is 'True', the second is "김치 프리미엄이 이상치입니다!",
+            // then the detailed explanation follows.
+            const issueBody = `김치 프리미엄이 통계적 이상치로 감지되었습니다.\n\n${lines.slice(1).join('\n')}\n\n자세한 분석 결과는 Actions 로그를 확인해주세요.`;
+
             github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: '김치 프리미엄 이상치 감지 알림',
-              body: '김치 프리미엄이 통계적 이상치로 감지되었습니다. 자세한 분석 결과는 Actions 로그를 확인해주세요.'
+              body: issueBody
             });
 
       - name: Commit and push changes

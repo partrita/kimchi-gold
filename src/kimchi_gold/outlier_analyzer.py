@@ -84,7 +84,7 @@ def determine_if_latest_value_is_outlier(
     date_column_name: str = "날짜",
     analysis_period_days: int = 365,
     iqr_multiplier_threshold: float = 1.5,
-) -> bool:
+) -> dict: # Change return type to dict
     """
     특정 컬럼의 최근 데이터를 기준으로 사분위수를 계산하고,
     가장 최근 데이터가 이상치인지 여부를 반환합니다.
@@ -97,14 +97,20 @@ def determine_if_latest_value_is_outlier(
         iqr_multiplier_threshold: IQR 배수 (기본값: 1.5)
 
     Returns:
-        가장 최근 데이터가 이상치면 True, 아니면 False
+        dict: 이상치 분석 결과 (is_outlier, latest_value, lower_bound, upper_bound, column_name)
 
     Raises:
         ValueError: 데이터가 없거나 컬럼이 없을 때
     """
     if input_dataframe.empty:
         logger.warning("비어있는 데이터프레임입니다")
-        return False
+        return {
+            "is_outlier": False,
+            "latest_value": None,
+            "lower_bound": None,
+            "upper_bound": None,
+            "column_name": target_column_name,
+        }
 
     if target_column_name not in input_dataframe.columns:
         raise ValueError(f"컬럼 '{target_column_name}'을 찾을 수 없습니다")
@@ -146,7 +152,13 @@ def determine_if_latest_value_is_outlier(
         f"이상치: {is_outlier_detected}"
     )
 
-    return is_outlier_detected
+    return { # Return a dictionary
+        "is_outlier": is_outlier_detected,
+        "latest_value": most_recent_value,
+        "lower_bound": lower_boundary,
+        "upper_bound": upper_boundary,
+        "column_name": target_column_name,
+    }
 
 
 def perform_kimchi_premium_outlier_analysis(
@@ -154,7 +166,7 @@ def perform_kimchi_premium_outlier_analysis(
     analysis_column_name: str = "김치프리미엄(%)",
     historical_analysis_days: int = 365,
     statistical_threshold_multiplier: float = 1.5,
-) -> Optional[bool]:
+) -> Optional[dict]: # Change return type to Optional[dict]
     """
     김치 프리미엄 데이터의 이상치 분석을 수행합니다.
 
@@ -165,7 +177,7 @@ def perform_kimchi_premium_outlier_analysis(
         statistical_threshold_multiplier: IQR 배수
 
     Returns:
-        이상치면 True, 정상이면 False, 오류시 None
+        dict: 이상치 분석 결과 (is_outlier, latest_value, lower_bound, upper_bound, column_name), 오류시 None
     """
     try:
         logger.info(f"김치 프리미엄 이상치 분석 시작: {data_csv_file_path}")
@@ -186,7 +198,7 @@ def perform_kimchi_premium_outlier_analysis(
             iqr_multiplier_threshold=statistical_threshold_multiplier,
         )
 
-        logger.info(f"분석 완료: 이상치 여부 = {outlier_analysis_result}")
+        logger.info(f"분석 완료: 이상치 여부 = {outlier_analysis_result['is_outlier']}")
         return outlier_analysis_result
 
     except FileNotFoundError:
@@ -232,9 +244,13 @@ def main():
         if analysis_result is None:
             print("오류: 데이터를 분석할 수 없습니다.")
             return 1
-        elif analysis_result:
+        elif analysis_result["is_outlier"]: # Access 'is_outlier' key
             print("True")
             print("김치 프리미엄이 이상치입니다!")
+            # Print detailed explanation for GitHub Action
+            print(f"괴리율: {analysis_result['latest_value']:.2f}%")
+            print(f"정상 범위: [{analysis_result['lower_bound']:.2f}%, {analysis_result['upper_bound']:.2f}%]")
+            print(f"판단 근거: 최신 김치 프리미엄({analysis_result['latest_value']:.2f}%)이(가) 통계적 정상 범위({analysis_result['lower_bound']:.2f}% ~ {analysis_result['upper_bound']:.2f}%)를 벗어났습니다.")
         else:
             print("False")
             print("김치 프리미엄이 정상 범위에 있습니다.")
