@@ -19,30 +19,7 @@ from .configuration import (
 )
 
 
-class GoldPriceChartConfiguration:
-    """
-    애플리케이션의 차트 생성 설정을 관리하는 클래스입니다.
-    """
 
-    display_period_months: int = DEFAULT_CHART_DISPLAY_MONTHS
-    source_data_file_name: str = "kimchi_gold_price_log.csv"
-    output_chart_file_name: str = CHART_OUTPUT_FILE_NAME
-
-
-class ChartFilePaths:
-    """
-    차트 생성에 필요한 파일 경로들을 관리하는 클래스입니다.
-    """
-
-    current_script_directory: Path = Path(__file__).resolve().parent
-    project_root_directory: Path = current_script_directory.parent.parent
-    data_storage_directory: Path = DATA_STORAGE_DIRECTORY
-    source_data_csv_file: Path = (
-        data_storage_directory / GoldPriceChartConfiguration.source_data_file_name
-    )
-    output_chart_image_file: Path = (
-        data_storage_directory / GoldPriceChartConfiguration.output_chart_file_name
-    )
 
 
 def load_and_preprocess_gold_price_data(
@@ -187,12 +164,22 @@ def create_comprehensive_gold_price_charts():
     메인 실행 함수입니다.
     데이터를 로드하고 전처리한 후, 세 개의 그래프를 생성하고 저장합니다.
     """
-    ChartFilePaths.data_storage_directory.mkdir(parents=True, exist_ok=True)
+    # Define configuration variables locally
+    display_period_months = DEFAULT_CHART_DISPLAY_MONTHS
+    source_data_file_name = "kimchi_gold_price_log.csv"
+    output_chart_file_name = CHART_OUTPUT_FILE_NAME
+
+    # Construct paths locally
+    data_storage_directory = DATA_STORAGE_DIRECTORY
+    source_data_csv_file = data_storage_directory / source_data_file_name
+    output_chart_image_file = data_storage_directory / output_chart_file_name
+
+    data_storage_directory.mkdir(parents=True, exist_ok=True)
 
     try:
         filtered_historical_data = load_and_preprocess_gold_price_data(
-            ChartFilePaths.source_data_csv_file,
-            GoldPriceChartConfiguration.display_period_months,
+            source_data_csv_file,
+            display_period_months,
         )
     except FileNotFoundError as file_error:
         print(file_error)
@@ -211,26 +198,24 @@ def create_comprehensive_gold_price_charts():
     generate_kimchi_premium_chart(
         chart_axes_list[0],
         filtered_historical_data,
-        GoldPriceChartConfiguration.display_period_months,
+        display_period_months,
     )
     generate_gold_prices_comparison_chart(
         chart_axes_list[1],
         filtered_historical_data,
-        GoldPriceChartConfiguration.display_period_months,
+        display_period_months,
     )
     generate_exchange_rate_trend_chart(
         chart_axes_list[2],
         filtered_historical_data,
-        GoldPriceChartConfiguration.display_period_months,
+        display_period_months,
     )
 
     plt.tight_layout()
-    plt.savefig(ChartFilePaths.output_chart_image_file)
+    plt.savefig(output_chart_image_file)
 
 
 # 하위 호환성을 위한 별칭들
-Config = GoldPriceChartConfiguration
-FilePaths = ChartFilePaths
 load_and_preprocess_data = load_and_preprocess_gold_price_data
 plot_kimchi_premium = generate_kimchi_premium_chart
 plot_gold_prices = generate_gold_prices_comparison_chart
@@ -241,9 +226,15 @@ main = create_comprehensive_gold_price_charts
 if __name__ == "__main__":
     try:
         create_comprehensive_gold_price_charts()
+        # Need to reconstruct the message as ChartFilePaths and GoldPriceChartConfiguration are gone
+        display_period_months = DEFAULT_CHART_DISPLAY_MONTHS
+        output_chart_file_name = CHART_OUTPUT_FILE_NAME
+        data_storage_directory = DATA_STORAGE_DIRECTORY
+        output_chart_image_file = data_storage_directory / output_chart_file_name
+
         print(
-            f"{GoldPriceChartConfiguration.display_period_months}개월 그래프가 "
-            f"성공적으로 {ChartFilePaths.output_chart_image_file}에 저장되었습니다"
+            f"{display_period_months}개월 그래프가 "
+            f"성공적으로 {output_chart_image_file}에 저장되었습니다"
         )
     except Exception as chart_generation_error:
         print(f"시각화 실패: {chart_generation_error}")
