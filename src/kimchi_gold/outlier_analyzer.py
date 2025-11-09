@@ -58,10 +58,9 @@ def filter_dataframe_by_recent_dates(
     if source_dataframe.empty:
         return source_dataframe
 
-    # 날짜 컬럼을 datetime으로 변환
-    processed_dataframe.loc[:, date_column_name] = pd.to_datetime(
-        processed_dataframe[date_column_name]
-    )
+    processed_dataframe = source_dataframe.copy()
+
+    # The date column should already be datetime type from pd.read_csv(parse_dates=...)
 
     # 기준 날짜 계산
     current_date = datetime.now().date()
@@ -176,7 +175,7 @@ def perform_kimchi_premium_outlier_analysis(
             logger.error(f"데이터 파일이 없습니다: {data_csv_file_path}")
             return None
 
-        historical_data_dataframe = pd.read_csv(data_csv_file_path)
+        historical_data_dataframe = pd.read_csv(data_csv_file_path, parse_dates=['날짜'])
         logger.debug(f"데이터 로드 완료: {len(historical_data_dataframe)} 행")
 
         # 이상치 분석 수행
