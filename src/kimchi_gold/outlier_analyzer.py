@@ -59,8 +59,7 @@ def filter_dataframe_by_recent_dates(
         return source_dataframe
 
     # 날짜 컬럼을 datetime으로 변환
-    processed_dataframe = source_dataframe.copy()
-    processed_dataframe[date_column_name] = pd.to_datetime(
+    processed_dataframe.loc[:, date_column_name] = pd.to_datetime(
         processed_dataframe[date_column_name]
     )
 
