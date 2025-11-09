@@ -3,6 +3,8 @@
 """
 
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from pathlib import Path
@@ -67,7 +69,7 @@ def load_and_preprocess_gold_price_data(
         raise FileNotFoundError(f"Error: {source_csv_file_path} not found.")
 
     # 날짜 컬럼을 datetime.date 형식으로 변환
-    historical_data_df["날짜"] = pd.to_datetime(historical_data_df["날짜"]).dt.date
+    historical_data_df.loc[:, "날짜"] = pd.to_datetime(historical_data_df["날짜"]).dt.date
     historical_data_df = historical_data_df.set_index("날짜")
 
     current_date = datetime.now().date()
