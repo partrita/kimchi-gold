@@ -215,12 +215,7 @@ def create_comprehensive_gold_price_charts():
     plt.savefig(output_chart_image_file)
 
 
-# 하위 호환성을 위한 별칭들
-load_and_preprocess_data = load_and_preprocess_gold_price_data
-plot_kimchi_premium = generate_kimchi_premium_chart
-plot_gold_prices = generate_gold_prices_comparison_chart
-plot_exchange_rate = generate_exchange_rate_trend_chart
-main = create_comprehensive_gold_price_charts
+
 
 
 if __name__ == "__main__":
