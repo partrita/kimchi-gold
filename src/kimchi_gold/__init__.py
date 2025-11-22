@@ -41,22 +41,10 @@ from .outlier_analyzer import (
     is_outlier,
     check_kimchi_premium_outlier,
 )
-# Import chart_generator functions lazily to avoid circular imports when running as module
-def __getattr__(name):
-    if name in [
-        "create_comprehensive_gold_price_charts",
-        "generate_kimchi_premium_chart",
-        "generate_gold_prices_comparison_chart",
-        "generate_exchange_rate_trend_chart",
-    ]:
-        from .chart_generator import (
-            create_comprehensive_gold_price_charts,
-            generate_kimchi_premium_chart,
-            generate_gold_prices_comparison_chart,
-            generate_exchange_rate_trend_chart,
-        )
-        return globals()[name]
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+# Note: chart_generator functions are not imported here to avoid circular imports
+# when running modules directly (e.g., python -m kimchi_gold.chart_generator).
+# Import them directly from kimchi_gold.chart_generator when needed.
 
 # 주요 기능들
 __all__ = [
@@ -76,11 +64,8 @@ __all__ = [
     # 이상치 분석
     "perform_kimchi_premium_outlier_analysis",
     "determine_if_latest_value_is_outlier",
-    # 차트 생성
-    "create_comprehensive_gold_price_charts",
-    "generate_kimchi_premium_chart",
-    "generate_gold_prices_comparison_chart",
-    "generate_exchange_rate_trend_chart",
+    # Note: chart_generator functions removed from __all__ to prevent circular imports
+    # Import directly from kimchi_gold.chart_generator when needed
     # 하위 호환성을 위한 별칭들
     "get_current_gold_price_data",
     "get_domestic_gold_price",
