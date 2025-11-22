@@ -41,12 +41,22 @@ from .outlier_analyzer import (
     is_outlier,
     check_kimchi_premium_outlier,
 )
-from .chart_generator import (
-    create_comprehensive_gold_price_charts,
-    generate_kimchi_premium_chart,
-    generate_gold_prices_comparison_chart,
-    generate_exchange_rate_trend_chart,
-)
+# Import chart_generator functions lazily to avoid circular imports when running as module
+def __getattr__(name):
+    if name in [
+        "create_comprehensive_gold_price_charts",
+        "generate_kimchi_premium_chart",
+        "generate_gold_prices_comparison_chart",
+        "generate_exchange_rate_trend_chart",
+    ]:
+        from .chart_generator import (
+            create_comprehensive_gold_price_charts,
+            generate_kimchi_premium_chart,
+            generate_gold_prices_comparison_chart,
+            generate_exchange_rate_trend_chart,
+        )
+        return globals()[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 # 주요 기능들
 __all__ = [
