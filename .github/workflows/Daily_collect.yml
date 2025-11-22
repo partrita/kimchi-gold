@@ -27,15 +27,15 @@ jobs:
         run: uv sync --locked --all-extras --dev
 
       - name: Run data collector
-        run: uv run python -m kimchi_gold.data_collector
+        run: uv run python scripts/collect_data.py
 
       - name: Run data chart generator
-        run: uv run python -m kimchi_gold.chart_generator
+        run: uv run python scripts/generate_chart.py
 
       - name: Run outlier analyzer script and get result
         id: run_python
         run: |
-          output=$(uv run python -m kimchi_gold.outlier_analyzer)
+          output=$(uv run python scripts/analyze_outlier.py)
           echo "full_output<<EOF" >> $GITHUB_OUTPUT
           echo "$output" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
