@@ -27,16 +27,15 @@ logger = logging.getLogger(__name__)
 if __name__ == "__main__":
     try:
         logger.info("금 가격 데이터 수집 시작")
-        result = collect_and_save_current_gold_market_data()
+        success = collect_and_save_current_gold_market_data()
         
-        if result:
-            logger.info(
-                f"데이터 수집 완료: 김치 프리미엄 {result.kimchi_premium_percent:.2f}%"
-            )
+        if success:
+            logger.info("데이터 수집 완료")
             print("금 가격 데이터 수집이 성공적으로 완료되었습니다.")
         else:
-            logger.info("오늘 날짜의 데이터가 이미 존재합니다. 수집을 건너뜁니다.")
-            print("오늘 날짜의 데이터가 이미 존재합니다.")
+            logger.error("데이터 수집 실패")
+            print("데이터 수집에 실패했습니다.")
+            sys.exit(1)
     except Exception as error:
         logger.error(f"데이터 수집 실패: {error}", exc_info=True)
         print(f"데이터 수집 실패: {error}")
