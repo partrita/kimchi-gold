@@ -2,6 +2,7 @@
 김치 프리미엄과 금 가격 데이터의 차트를 생성하는 모듈입니다.
 """
 
+import sys
 import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
@@ -11,6 +12,9 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+
+# Increase recursion limit to handle matplotlib's deepcopy issues
+sys.setrecursionlimit(5000)
 
 from .configuration import (
     DATA_STORAGE_DIRECTORY,
@@ -73,7 +77,7 @@ def generate_kimchi_premium_chart(
         chart_data_df: 그래프에 사용할 데이터프레임 (날짜를 인덱스로 가져야 함)
         display_period_months: 그래프 제목에 표시할 기간 (개월 수)
     """
-    (line,) = chart_axes.plot(
+    chart_axes.plot(
         chart_data_df.index,
         chart_data_df["김치프리미엄(%)"],
         label="Kimchi Premium (%)",
@@ -83,7 +87,7 @@ def generate_kimchi_premium_chart(
     )
     chart_axes.set_ylabel("Kimchi Premium (%)")
     chart_axes.set_title(f"Recent {display_period_months} Months: Kimchi Premium (%)")
-    chart_axes.legend(handles=[line], loc="upper left")
+    chart_axes.legend(loc="upper left")
     chart_axes.tick_params(axis="x", rotation=45)
     chart_axes.xaxis.set_major_locator(mdates.AutoDateLocator())
     chart_axes.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
@@ -101,7 +105,7 @@ def generate_gold_prices_comparison_chart(
         chart_data_df: 그래프에 사용할 데이터프레임
         display_period_months: 그래프 제목에 표시할 기간 (개월 수)
     """
-    (line1,) = chart_axes.plot(
+    chart_axes.plot(
         chart_data_df.index,
         chart_data_df["국내금(원/g)"],
         label="Domestic Gold (KRW/g)",
@@ -115,7 +119,7 @@ def generate_gold_prices_comparison_chart(
         * chart_data_df["환율(원/달러)"]
     )
 
-    (line2,) = chart_axes.plot(
+    chart_axes.plot(
         chart_data_df.index,
         international_gold_price_krw_per_gram,
         label="International Gold (KRW/g, FX adjusted)",
@@ -125,7 +129,7 @@ def generate_gold_prices_comparison_chart(
     chart_axes.set_title(
         f"Recent {display_period_months} Months: Domestic vs International Gold Price"
     )
-    chart_axes.legend(handles=[line1, line2])
+    chart_axes.legend()
     chart_axes.tick_params(axis="x", rotation=45)
     chart_axes.xaxis.set_major_locator(mdates.AutoDateLocator())
     chart_axes.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
@@ -143,7 +147,7 @@ def generate_exchange_rate_trend_chart(
         chart_data_df: 그래프에 사용할 데이터프레임
         display_period_months: 그래프 제목에 표시할 기간 (개월 수)
     """
-    (line,) = chart_axes.plot(
+    chart_axes.plot(
         chart_data_df.index,
         chart_data_df["환율(원/달러)"],
         label="Exchange Rate (KRW/USD)",
@@ -152,7 +156,7 @@ def generate_exchange_rate_trend_chart(
     )
     chart_axes.set_ylabel("Exchange Rate (KRW/USD)")
     chart_axes.set_title(f"Recent {display_period_months} Months: Exchange Rate Trend")
-    chart_axes.legend(handles=[line])
+    chart_axes.legend()
     chart_axes.tick_params(axis="x", rotation=45)
     chart_axes.xaxis.set_major_locator(mdates.AutoDateLocator())
     chart_axes.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
