@@ -18,7 +18,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Set up Python
-        run: uv python install
+        run: uv python install 3.11
 
       - name: Install Pillow dependencies
         run: sudo apt-get update && sudo apt-get install -y libjpeg-dev zlib1g-dev
