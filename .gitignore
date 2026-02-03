@@ -173,3 +173,9 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 .vscode
+# Quarto
+/.quarto/
+website/.quarto/
+website/docs/
+
+.agent

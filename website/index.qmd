@@ -1,0 +1,114 @@
+---
+title: "Kimchi Gold Premium Dashboard"
+format:
+  html:
+    code-fold: true
+jupyter: python3
+---
+
+This dashboard tracks the "Kimchi Premium" on gold prices in Korea compared to international rates.
+Data is updated daily.
+
+```{python}
+#| label: load-data
+#| warning: false
+
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from pathlib import Path
+
+# Load data
+# The website directory is one level down from root, so data is at ../data
+data_path = Path("../data/kimchi_gold_price_log.csv")
+df = pd.read_csv(data_path)
+df['날짜'] = pd.to_datetime(df['날짜'])
+
+# Calculate International Gold Price in KRW/g
+# 1 Troy Ounce = 31.1034768 grams
+df['International_KRW_g'] = df['국제금(달러/온스)'] * (1 / 31.1035) * df['환율(원/달러)']
+```
+
+## 1. Kimchi Premium (%)
+
+The percentage difference between domestic and international gold prices.
+
+```{python}
+#| label: plot-premium
+
+fig1 = go.Figure()
+fig1.add_trace(go.Scatter(
+    x=df['날짜'], 
+    y=df['김치프리미엄(%)'],
+    mode='lines+markers',
+    name='Kimchi Premium (%)',
+    line=dict(color='red', dash='dash')
+))
+
+fig1.update_layout(
+    title='Kimchi Premium (%) Trend',
+    xaxis_title='Date',
+    yaxis_title='Premium (%)',
+    hovermode='x unified'
+)
+fig1.show()
+```
+
+## 2. Domestic vs International Gold Price
+
+Comparison of domestic gold price (KRW/g) vs international gold price converted to KRW/g.
+
+```{python}
+#| label: plot-price-comparison
+
+fig2 = go.Figure()
+fig2.add_trace(go.Scatter(
+    x=df['날짜'], 
+    y=df['국내금(원/g)'], 
+    mode='lines+markers', 
+    name='Domestic Gold (KRW/g)'
+))
+fig2.add_trace(go.Scatter(
+    x=df['날짜'], 
+    y=df['International_KRW_g'], 
+    mode='lines+markers', 
+    name='International Gold (KRW/g, FX adjusted)',
+    marker=dict(symbol='x')
+))
+
+fig2.update_layout(
+    title='Domestic vs International Gold Price',
+    xaxis_title='Date',
+    yaxis_title='Price (KRW/g)',
+    hovermode='x unified'
+)
+fig2.show()
+```
+
+## 3. Exchange Rate (KRW/USD)
+
+The KRW/USD exchange rate trend.
+
+```{python}
+#| label: plot-exchange-rate
+
+fig3 = go.Figure()
+fig3.add_trace(go.Scatter(
+    x=df['날짜'], 
+    y=df['환율(원/달러)'],
+    mode='lines+markers',
+    name='Exchange Rate',
+    line=dict(color='purple')
+))
+
+fig3.update_layout(
+    title='Exchange Rate (KRW/USD)',
+    xaxis_title='Date',
+    yaxis_title='KRW/USD',
+    hovermode='x unified'
+)
+fig3.show()
+```
+
+<br>
+<small>Data Source: `data/kimchi_gold_price_log.csv`</small>
