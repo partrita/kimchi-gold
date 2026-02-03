@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Kimchi Gold Premium Dashboard",
+    "section": "",
+    "text": "This dashboard tracks the “Kimchi Premium” on gold prices in Korea compared to international rates. Data is updated daily.\nCode\nimport pandas as pd\nimport plotly.express as px\nimport plotly.graph_objects as go\nfrom pathlib import Path\n\n# Load data\n# The website directory is one level down from root, so data is at ../data\ndata_path = Path(\"../data/kimchi_gold_price_log.csv\")\ndf = pd.read_csv(data_path)\ndf['날짜'] = pd.to_datetime(df['날짜'])\n\n# Calculate International Gold Price in KRW/g\n# 1 Troy Ounce = 31.1034768 grams\ndf['International_KRW_g'] = df['국제금(달러/온스)'] * (1 / 31.1035) * df['환율(원/달러)']"
+  },
+  {
+    "objectID": "index.html#kimchi-premium",
+    "href": "index.html#kimchi-premium",
+    "title": "Kimchi Gold Premium Dashboard",
+    "section": "1. Kimchi Premium (%)",
+    "text": "1. Kimchi Premium (%)\nThe percentage difference between domestic and international gold prices.\n\n\nCode\nfig1 = go.Figure()\nfig1.add_trace(go.Scatter(\n    x=df['날짜'], \n    y=df['김치프리미엄(%)'],\n    mode='lines+markers',\n    name='Kimchi Premium (%)',\n    line=dict(color='red', dash='dash')\n))\n\nfig1.update_layout(\n    title='Kimchi Premium (%) Trend',\n    xaxis_title='Date',\n    yaxis_title='Premium (%)',\n    hovermode='x unified'\n)\nfig1.show()"
+  },
+  {
+    "objectID": "index.html#domestic-vs-international-gold-price",
+    "href": "index.html#domestic-vs-international-gold-price",
+    "title": "Kimchi Gold Premium Dashboard",
+    "section": "2. Domestic vs International Gold Price",
+    "text": "2. Domestic vs International Gold Price\nComparison of domestic gold price (KRW/g) vs international gold price converted to KRW/g.\n\n\nCode\nfig2 = go.Figure()\nfig2.add_trace(go.Scatter(\n    x=df['날짜'], \n    y=df['국내금(원/g)'], \n    mode='lines+markers', \n    name='Domestic Gold (KRW/g)'\n))\nfig2.add_trace(go.Scatter(\n    x=df['날짜'], \n    y=df['International_KRW_g'], \n    mode='lines+markers', \n    name='International Gold (KRW/g, FX adjusted)',\n    marker=dict(symbol='x')\n))\n\nfig2.update_layout(\n    title='Domestic vs International Gold Price',\n    xaxis_title='Date',\n    yaxis_title='Price (KRW/g)',\n    hovermode='x unified'\n)\nfig2.show()"
+  },
+  {
+    "objectID": "index.html#exchange-rate-krwusd",
+    "href": "index.html#exchange-rate-krwusd",
+    "title": "Kimchi Gold Premium Dashboard",
+    "section": "3. Exchange Rate (KRW/USD)",
+    "text": "3. Exchange Rate (KRW/USD)\nThe KRW/USD exchange rate trend.\n\n\nCode\nfig3 = go.Figure()\nfig3.add_trace(go.Scatter(\n    x=df['날짜'], \n    y=df['환율(원/달러)'],\n    mode='lines+markers',\n    name='Exchange Rate',\n    line=dict(color='purple')\n))\n\nfig3.update_layout(\n    title='Exchange Rate (KRW/USD)',\n    xaxis_title='Date',\n    yaxis_title='KRW/USD',\n    hovermode='x unified'\n)\nfig3.show()\n\n\n                            \n                                            \n\n\n Data Source: data/kimchi_gold_price_log.csv"
+  }
+]
