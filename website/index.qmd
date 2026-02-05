@@ -1,5 +1,5 @@
 ---
-title: "Kimchi Gold Premium Dashboard"
+title: "Kimchi Gold 💰📈"
 format:
   html:
     code-fold: true
@@ -29,7 +29,7 @@ df['날짜'] = pd.to_datetime(df['날짜'])
 df['International_KRW_g'] = df['국제금(달러/온스)'] * (1 / 31.1035) * df['환율(원/달러)']
 ```
 
-## 1. Kimchi Premium (%)
+## 1. Kimchi Premium (%) 📊
 
 The percentage difference between domestic and international gold prices.
 
@@ -40,9 +40,9 @@ fig1 = go.Figure()
 fig1.add_trace(go.Scatter(
     x=df['날짜'], 
     y=df['김치프리미엄(%)'],
-    mode='lines+markers',
+    mode='lines',
     name='Kimchi Premium (%)',
-    line=dict(color='red', dash='dash')
+    line=dict(color='red')
 ))
 
 fig1.update_layout(
@@ -54,7 +54,7 @@ fig1.update_layout(
 fig1.show()
 ```
 
-## 2. Domestic vs International Gold Price
+## 2. Domestic vs International Gold Price ⚖️
 
 Comparison of domestic gold price (KRW/g) vs international gold price converted to KRW/g.
 
@@ -65,15 +65,14 @@ fig2 = go.Figure()
 fig2.add_trace(go.Scatter(
     x=df['날짜'], 
     y=df['국내금(원/g)'], 
-    mode='lines+markers', 
+    mode='lines', 
     name='Domestic Gold (KRW/g)'
 ))
 fig2.add_trace(go.Scatter(
     x=df['날짜'], 
     y=df['International_KRW_g'], 
-    mode='lines+markers', 
-    name='International Gold (KRW/g, FX adjusted)',
-    marker=dict(symbol='x')
+    mode='lines', 
+    name='International Gold (KRW/g, FX adjusted)'
 ))
 
 fig2.update_layout(
@@ -85,7 +84,7 @@ fig2.update_layout(
 fig2.show()
 ```
 
-## 3. Exchange Rate (KRW/USD)
+## 3. Exchange Rate (KRW/USD) 💵
 
 The KRW/USD exchange rate trend.
 
@@ -96,7 +95,7 @@ fig3 = go.Figure()
 fig3.add_trace(go.Scatter(
     x=df['날짜'], 
     y=df['환율(원/달러)'],
-    mode='lines+markers',
+    mode='lines',
     name='Exchange Rate',
     line=dict(color='purple')
 ))
@@ -108,6 +107,22 @@ fig3.update_layout(
     hovermode='x unified'
 )
 fig3.show()
+```
+
+## 4. Kimchi Premium Table (Last 30 Days) 📅
+
+Recent variation of the Kimchi Premium and gold prices.
+
+```{python}
+#| label: premium-table
+
+# Prepare table data (last 30 days, newest first)
+table_df = df.tail(30).iloc[::-1][['날짜', '김치프리미엄(%)', '국내금(원/g)', 'International_KRW_g']].copy()
+table_df['날짜'] = table_df['날짜'].dt.strftime('%Y-%m-%d')
+table_df.columns = ['Date', 'Premium (%)', 'Domestic (KRW/g)', 'International (KRW/g)']
+
+# Display table
+table_df
 ```
 
 <br>

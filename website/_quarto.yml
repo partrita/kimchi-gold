@@ -3,7 +3,7 @@ project:
   output-dir: docs
 
 website:
-  title: "Kimchi Gold Premium"
+  title: "Kimchi Gold 💰"
   navbar:
     left:
       - href: index.qmd
@@ -11,6 +11,6 @@ website:
 
 format:
   html:
-    theme: cosmo
+    theme: default
     css: styles.css
     toc: true
