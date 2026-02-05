@@ -1,13 +1,13 @@
 ---
-title: "Kimchi Gold 💰📈"
+title: "김치 금 프리미엄 대시보드 💰📈"
 format:
   html:
     code-fold: true
 jupyter: python3
 ---
 
-This dashboard tracks the "Kimchi Premium" on gold prices in Korea compared to international rates.
-Data is updated daily.
+이 대시보드는 국제 금 시세와 비교한 국내 금 시세의 "김치 프리미엄"을 추적합니다.
+데이터는 매일 업데이트됩니다.
 
 ```{python}
 #| label: load-data
@@ -18,20 +18,35 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
 
-# Load data
-# The website directory is one level down from root, so data is at ../data
+# 데이터 로드
 data_path = Path("../data/kimchi_gold_price_log.csv")
 df = pd.read_csv(data_path)
 df['날짜'] = pd.to_datetime(df['날짜'])
 
-# Calculate International Gold Price in KRW/g
+# 국제 금 시세를 KRW/g으로 계산
 # 1 Troy Ounce = 31.1034768 grams
 df['International_KRW_g'] = df['국제금(달러/온스)'] * (1 / 31.1035) * df['환율(원/달러)']
 ```
 
-## 1. Kimchi Premium (%) 📊
+## 1. 김치 프리미엄 테이블 (최근 30일) 📅
 
-The percentage difference between domestic and international gold prices.
+최근 김치 프리미엄 및 금 시세 변동 현황입니다.
+
+```{python}
+#| label: premium-table
+
+# 테이블 데이터 준비 (최근 30일, 최신순)
+table_df = df.tail(30).iloc[::-1][['날짜', '김치프리미엄(%)', '국내금(원/g)', 'International_KRW_g']].copy()
+table_df['날짜'] = table_df['날짜'].dt.strftime('%Y-%m-%d')
+table_df.columns = ['날짜', '프리미엄 (%)', '국내 금 (원/g)', '국제 금 (원/g)']
+
+# 테이블 표시
+table_df
+```
+
+## 2. 김치 프리미엄 (%) 📊
+
+국내 금 가격과 국제 금 가격의 백분율 차이입니다.
 
 ```{python}
 #| label: plot-premium
@@ -41,22 +56,22 @@ fig1.add_trace(go.Scatter(
     x=df['날짜'], 
     y=df['김치프리미엄(%)'],
     mode='lines',
-    name='Kimchi Premium (%)',
+    name='김치 프리미엄 (%)',
     line=dict(color='red')
 ))
 
 fig1.update_layout(
-    title='Kimchi Premium (%) Trend',
-    xaxis_title='Date',
-    yaxis_title='Premium (%)',
+    title='김치 프리미엄 (%) 추이',
+    xaxis_title='날짜',
+    yaxis_title='프리미엄 (%)',
     hovermode='x unified'
 )
 fig1.show()
 ```
 
-## 2. Domestic vs International Gold Price ⚖️
+## 3. 국내 vs 국제 금 시세 비교 ⚖️
 
-Comparison of domestic gold price (KRW/g) vs international gold price converted to KRW/g.
+국내 금 시세(원/g)와 원화로 환산된 국제 금 시세의 비교입니다.
 
 ```{python}
 #| label: plot-price-comparison
@@ -66,27 +81,27 @@ fig2.add_trace(go.Scatter(
     x=df['날짜'], 
     y=df['국내금(원/g)'], 
     mode='lines', 
-    name='Domestic Gold (KRW/g)'
+    name='국내 금 (원/g)'
 ))
 fig2.add_trace(go.Scatter(
     x=df['날짜'], 
     y=df['International_KRW_g'], 
     mode='lines', 
-    name='International Gold (KRW/g, FX adjusted)'
+    name='국제 금 (원/g, 환율 반영)'
 ))
 
 fig2.update_layout(
-    title='Domestic vs International Gold Price',
-    xaxis_title='Date',
-    yaxis_title='Price (KRW/g)',
+    title='국내 vs 국제 금 시세',
+    xaxis_title='날짜',
+    yaxis_title='가격 (원/g)',
     hovermode='x unified'
 )
 fig2.show()
 ```
 
-## 3. Exchange Rate (KRW/USD) 💵
+## 4. 환율 (원/달러) 💵
 
-The KRW/USD exchange rate trend.
+원/달러 환율 추이입니다.
 
 ```{python}
 #| label: plot-exchange-rate
@@ -96,34 +111,18 @@ fig3.add_trace(go.Scatter(
     x=df['날짜'], 
     y=df['환율(원/달러)'],
     mode='lines',
-    name='Exchange Rate',
+    name='환율',
     line=dict(color='purple')
 ))
 
 fig3.update_layout(
-    title='Exchange Rate (KRW/USD)',
-    xaxis_title='Date',
-    yaxis_title='KRW/USD',
+    title='원/달러 환율',
+    xaxis_title='날짜',
+    yaxis_title='원/달러',
     hovermode='x unified'
 )
 fig3.show()
 ```
 
-## 4. Kimchi Premium Table (Last 30 Days) 📅
-
-Recent variation of the Kimchi Premium and gold prices.
-
-```{python}
-#| label: premium-table
-
-# Prepare table data (last 30 days, newest first)
-table_df = df.tail(30).iloc[::-1][['날짜', '김치프리미엄(%)', '국내금(원/g)', 'International_KRW_g']].copy()
-table_df['날짜'] = table_df['날짜'].dt.strftime('%Y-%m-%d')
-table_df.columns = ['Date', 'Premium (%)', 'Domestic (KRW/g)', 'International (KRW/g)']
-
-# Display table
-table_df
-```
-
 <br>
-<small>Data Source: `data/kimchi_gold_price_log.csv`</small>
+<small>데이터 출처: `data/kimchi_gold_price_log.csv`</small>
