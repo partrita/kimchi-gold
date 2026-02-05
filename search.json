@@ -2,29 +2,36 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "Kimchi Gold Premium Dashboard",
+    "title": "Kimchi Gold 💰📈",
     "section": "",
     "text": "This dashboard tracks the “Kimchi Premium” on gold prices in Korea compared to international rates. Data is updated daily.\nCode\nimport pandas as pd\nimport plotly.express as px\nimport plotly.graph_objects as go\nfrom pathlib import Path\n\n# Load data\n# The website directory is one level down from root, so data is at ../data\ndata_path = Path(\"../data/kimchi_gold_price_log.csv\")\ndf = pd.read_csv(data_path)\ndf['날짜'] = pd.to_datetime(df['날짜'])\n\n# Calculate International Gold Price in KRW/g\n# 1 Troy Ounce = 31.1034768 grams\ndf['International_KRW_g'] = df['국제금(달러/온스)'] * (1 / 31.1035) * df['환율(원/달러)']"
   },
   {
     "objectID": "index.html#kimchi-premium",
     "href": "index.html#kimchi-premium",
-    "title": "Kimchi Gold Premium Dashboard",
-    "section": "1. Kimchi Premium (%)",
-    "text": "1. Kimchi Premium (%)\nThe percentage difference between domestic and international gold prices.\n\n\nCode\nfig1 = go.Figure()\nfig1.add_trace(go.Scatter(\n    x=df['날짜'], \n    y=df['김치프리미엄(%)'],\n    mode='lines+markers',\n    name='Kimchi Premium (%)',\n    line=dict(color='red', dash='dash')\n))\n\nfig1.update_layout(\n    title='Kimchi Premium (%) Trend',\n    xaxis_title='Date',\n    yaxis_title='Premium (%)',\n    hovermode='x unified'\n)\nfig1.show()"
+    "title": "Kimchi Gold 💰📈",
+    "section": "1. Kimchi Premium (%) 📊",
+    "text": "1. Kimchi Premium (%) 📊\nThe percentage difference between domestic and international gold prices.\n\n\nCode\nfig1 = go.Figure()\nfig1.add_trace(go.Scatter(\n    x=df['날짜'], \n    y=df['김치프리미엄(%)'],\n    mode='lines',\n    name='Kimchi Premium (%)',\n    line=dict(color='red')\n))\n\nfig1.update_layout(\n    title='Kimchi Premium (%) Trend',\n    xaxis_title='Date',\n    yaxis_title='Premium (%)',\n    hovermode='x unified'\n)\nfig1.show()"
   },
   {
     "objectID": "index.html#domestic-vs-international-gold-price",
     "href": "index.html#domestic-vs-international-gold-price",
-    "title": "Kimchi Gold Premium Dashboard",
-    "section": "2. Domestic vs International Gold Price",
-    "text": "2. Domestic vs International Gold Price\nComparison of domestic gold price (KRW/g) vs international gold price converted to KRW/g.\n\n\nCode\nfig2 = go.Figure()\nfig2.add_trace(go.Scatter(\n    x=df['날짜'], \n    y=df['국내금(원/g)'], \n    mode='lines+markers', \n    name='Domestic Gold (KRW/g)'\n))\nfig2.add_trace(go.Scatter(\n    x=df['날짜'], \n    y=df['International_KRW_g'], \n    mode='lines+markers', \n    name='International Gold (KRW/g, FX adjusted)',\n    marker=dict(symbol='x')\n))\n\nfig2.update_layout(\n    title='Domestic vs International Gold Price',\n    xaxis_title='Date',\n    yaxis_title='Price (KRW/g)',\n    hovermode='x unified'\n)\nfig2.show()"
+    "title": "Kimchi Gold 💰📈",
+    "section": "2. Domestic vs International Gold Price ⚖️",
+    "text": "2. Domestic vs International Gold Price ⚖️\nComparison of domestic gold price (KRW/g) vs international gold price converted to KRW/g.\n\n\nCode\nfig2 = go.Figure()\nfig2.add_trace(go.Scatter(\n    x=df['날짜'], \n    y=df['국내금(원/g)'], \n    mode='lines', \n    name='Domestic Gold (KRW/g)'\n))\nfig2.add_trace(go.Scatter(\n    x=df['날짜'], \n    y=df['International_KRW_g'], \n    mode='lines', \n    name='International Gold (KRW/g, FX adjusted)'\n))\n\nfig2.update_layout(\n    title='Domestic vs International Gold Price',\n    xaxis_title='Date',\n    yaxis_title='Price (KRW/g)',\n    hovermode='x unified'\n)\nfig2.show()"
   },
   {
     "objectID": "index.html#exchange-rate-krwusd",
     "href": "index.html#exchange-rate-krwusd",
-    "title": "Kimchi Gold Premium Dashboard",
-    "section": "3. Exchange Rate (KRW/USD)",
-    "text": "3. Exchange Rate (KRW/USD)\nThe KRW/USD exchange rate trend.\n\n\nCode\nfig3 = go.Figure()\nfig3.add_trace(go.Scatter(\n    x=df['날짜'], \n    y=df['환율(원/달러)'],\n    mode='lines+markers',\n    name='Exchange Rate',\n    line=dict(color='purple')\n))\n\nfig3.update_layout(\n    title='Exchange Rate (KRW/USD)',\n    xaxis_title='Date',\n    yaxis_title='KRW/USD',\n    hovermode='x unified'\n)\nfig3.show()\n\n\n                            \n                                            \n\n\n Data Source: data/kimchi_gold_price_log.csv"
+    "title": "Kimchi Gold 💰📈",
+    "section": "3. Exchange Rate (KRW/USD) 💵",
+    "text": "3. Exchange Rate (KRW/USD) 💵\nThe KRW/USD exchange rate trend.\n\n\nCode\nfig3 = go.Figure()\nfig3.add_trace(go.Scatter(\n    x=df['날짜'], \n    y=df['환율(원/달러)'],\n    mode='lines',\n    name='Exchange Rate',\n    line=dict(color='purple')\n))\n\nfig3.update_layout(\n    title='Exchange Rate (KRW/USD)',\n    xaxis_title='Date',\n    yaxis_title='KRW/USD',\n    hovermode='x unified'\n)\nfig3.show()"
+  },
+  {
+    "objectID": "index.html#kimchi-premium-table-last-30-days",
+    "href": "index.html#kimchi-premium-table-last-30-days",
+    "title": "Kimchi Gold 💰📈",
+    "section": "4. Kimchi Premium Table (Last 30 Days) 📅",
+    "text": "4. Kimchi Premium Table (Last 30 Days) 📅\nRecent variation of the Kimchi Premium and gold prices.\n\n\nCode\n# Prepare table data (last 30 days, newest first)\ntable_df = df.tail(30).iloc[::-1][['날짜', '김치프리미엄(%)', '국내금(원/g)', 'International_KRW_g']].copy()\ntable_df['날짜'] = table_df['날짜'].dt.strftime('%Y-%m-%d')\ntable_df.columns = ['Date', 'Premium (%)', 'Domestic (KRW/g)', 'International (KRW/g)']\n\n# Display table\ntable_df\n\n\n\n\n\n\n\n\n\nDate\nPremium (%)\nDomestic (KRW/g)\nInternational (KRW/g)\n\n\n\n\n745\n2026-02-05\n1.38\n234090.0\n230908.014211\n\n\n744\n2026-02-04\n3.89\n246740.0\n237507.854743\n\n\n743\n2026-02-03\n4.37\n235120.0\n225270.035848\n\n\n742\n2026-02-02\n3.20\n227700.0\n220637.549472\n\n\n741\n2026-02-01\n14.21\n253000.0\n221514.787725\n\n\n740\n2026-01-31\n14.29\n253000.0\n221362.229331\n\n\n739\n2026-01-30\n5.89\n254920.0\n240735.336859\n\n\n738\n2026-01-29\n5.55\n267050.0\n253015.808510\n\n\n737\n2026-01-28\n5.61\n253750.0\n240267.249666\n\n\n736\n2026-01-27\n3.02\n243130.0\n235995.115984\n\n\n735\n2026-01-26\n1.82\n239160.0\n234893.457006\n\n\n734\n2026-01-25\n0.47\n234100.0\n232994.917292\n\n\n733\n2026-01-24\n0.63\n234100.0\n232626.685100\n\n\n732\n2026-01-23\n0.33\n234550.0\n233789.863520\n\n\n731\n2026-01-22\n0.40\n227550.0\n226637.848474\n\n\n730\n2026-01-21\n0.41\n229870.0\n228937.455592\n\n\n729\n2026-01-20\n0.16\n222930.0\n222577.104506\n\n\n728\n2026-01-19\n0.20\n221610.0\n221177.776135\n\n\n727\n2026-01-18\n0.33\n218720.0\n217998.382819\n\n\n726\n2026-01-17\n0.33\n218720.0\n217998.382819\n\n\n725\n2026-01-16\n0.25\n218350.0\n217809.558088\n\n\n724\n2026-01-15\n0.21\n217980.0\n217533.332262\n\n\n723\n2026-01-14\n-0.02\n220100.0\n220135.677335\n\n\n722\n2026-01-13\n-0.01\n218080.0\n218104.335525\n\n\n721\n2026-01-12\n-0.23\n215730.0\n216217.796711\n\n\n720\n2026-01-11\n-0.48\n210240.0\n211258.022731\n\n\n719\n2026-01-10\n-0.48\n210240.0\n211258.022731\n\n\n718\n2026-01-09\n-0.06\n209270.0\n209396.648287\n\n\n717\n2026-01-08\n0.36\n208160.0\n207423.272622\n\n\n716\n2026-01-07\n0.45\n209920.0\n208970.347389\n\n\n\n\n\n\n\n Data Source: data/kimchi_gold_price_log.csv"
   }
 ]
