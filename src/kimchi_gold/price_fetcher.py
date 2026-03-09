@@ -26,7 +26,6 @@ def extract_price_from_naver_finance(
     target_url: str,
     error_message: str,
     price_pattern: str = r"[\d,]+(?:\.\d+)?",
-    session: Optional[requests.Session] = None,
 ) -> float:
     """
     네이버 금융 페이지에서 가격 정보를 추출하는 공통 함수
@@ -35,7 +34,6 @@ def extract_price_from_naver_finance(
         target_url: 가격 정보를 가져올 네이버 금융 URL
         error_message: 오류 시 표시할 메시지
         price_pattern: 가격 추출을 위한 정규식 패턴
-        session: HTTP 요청에 사용할 선택적 Session 객체
 
     Returns:
         추출된 가격 (float)
@@ -44,8 +42,7 @@ def extract_price_from_naver_finance(
         requests.RequestException: HTTP 요청 실패 시
         ValueError: 가격 정보를 찾을 수 없을 시
     """
-    fetcher = session if session else requests
-    response = fetcher.get(target_url, headers=REQUEST_HEADERS, timeout=10)
+    response = requests.get(target_url, headers=REQUEST_HEADERS, timeout=10)
     response.raise_for_status()  # Raise an exception for bad status codes
     soup = BeautifulSoup(response.content, "html.parser")
 
@@ -62,24 +59,24 @@ def extract_price_from_naver_finance(
     raise ValueError(error_message)
 
 
-def fetch_domestic_gold_price(session: Optional[requests.Session] = None) -> float:
+def fetch_domestic_gold_price() -> float:
     """국내 금 가격을 가져옵니다 (원/g)"""
     return extract_price_from_naver_finance(
-        NAVER_DOMESTIC_GOLD_URL, "국내 금 가격 정보를 찾을 수 없습니다.", session=session
+        NAVER_DOMESTIC_GOLD_URL, "국내 금 가격 정보를 찾을 수 없습니다."
     )
 
 
-def fetch_international_gold_price(session: Optional[requests.Session] = None) -> float:
+def fetch_international_gold_price() -> float:
     """국제 금 가격을 가져옵니다 (달러/온스)"""
     return extract_price_from_naver_finance(
-        NAVER_INTERNATIONAL_GOLD_URL, "국제 금 가격 정보를 찾을 수 없습니다.", session=session
+        NAVER_INTERNATIONAL_GOLD_URL, "국제 금 가격 정보를 찾을 수 없습니다."
     )
 
 
-def fetch_usd_krw_exchange_rate(session: Optional[requests.Session] = None) -> float:
+def fetch_usd_krw_exchange_rate() -> float:
     """USD/KRW 환율을 가져옵니다"""
     return extract_price_from_naver_finance(
-        NAVER_USD_KRW_EXCHANGE_URL, "환율 정보를 찾을 수 없습니다.", session=session
+        NAVER_USD_KRW_EXCHANGE_URL, "환율 정보를 찾을 수 없습니다."
     )
 
 
@@ -122,7 +119,7 @@ def calculate_kimchi_premium_values(
 def fetch_current_gold_market_data() -> GoldPriceData:
     """
     현재 금 가격 데이터를 수집하고 김치 프리미엄을 계산합니다.
-    성능 최적화를 위해 ThreadPoolExecutor와 requests.Session을 사용하여
+    성능 최적화를 위해 ThreadPoolExecutor를 사용하여
     여러 웹 페이지의 데이터를 병렬로 수집합니다.
 
     Returns:
@@ -134,20 +131,15 @@ def fetch_current_gold_market_data() -> GoldPriceData:
     try:
         logger.info("금 가격 데이터 수집 시작 (병렬)")
 
-        with requests.Session() as session:
-            session.headers.update(REQUEST_HEADERS)
+        # 병렬로 데이터 수집
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            future_domestic = executor.submit(fetch_domestic_gold_price)
+            future_international = executor.submit(fetch_international_gold_price)
+            future_usd_krw = executor.submit(fetch_usd_krw_exchange_rate)
 
-            # 병렬로 데이터 수집
-            with ThreadPoolExecutor(max_workers=3) as executor:
-                future_domestic = executor.submit(fetch_domestic_gold_price, session)
-                future_international = executor.submit(
-                    fetch_international_gold_price, session
-                )
-                future_usd_krw = executor.submit(fetch_usd_krw_exchange_rate, session)
-
-                domestic_gold_price = future_domestic.result()
-                international_gold_price = future_international.result()
-                current_usd_krw_rate = future_usd_krw.result()
+            domestic_gold_price = future_domestic.result()
+            international_gold_price = future_international.result()
+            current_usd_krw_rate = future_usd_krw.result()
 
         # 국제 금 가격을 원/g으로 환산
         international_gold_price_krw_per_gram = (
