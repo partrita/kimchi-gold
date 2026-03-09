@@ -51,6 +51,14 @@ premium_color = "#e44d26" if premium >= 0 else "#264de4"  # Red-ish for positive
 #| echo: false
 #| output: asis
 
+# 프리미엄 값에 따라 호출 아웃 유형 및 아이콘 결정
+if premium >= 0:
+    premium_callout = "important"
+    premium_status = "📈 (국내 가격 높음)"
+else:
+    premium_callout = "tip"
+    premium_status = "📉 (국내 가격 낮음)"
+
 # Quarto callouts를 사용하여 요약 정보 표시
 summary_markdown = f"""
 ::: {{layout-ncol=2}}
@@ -60,9 +68,9 @@ summary_markdown = f"""
 **{latest_date}**
 :::
 
-::: {{.callout-important icon=false}}
+::: {{.callout-{premium_callout} icon=false}}
 ## 김치 프리미엄 📊
-**{premium:+.2f}%**
+**{premium:+.2f}%** {premium_status}
 :::
 
 ::: {{.callout-tip icon=false}}
