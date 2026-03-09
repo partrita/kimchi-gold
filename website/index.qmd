@@ -12,11 +12,13 @@ jupyter: python3
 ```{python}
 #| label: load-data
 #| warning: false
+#| echo: false
 
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
+from IPython.display import Markdown, HTML
 
 # 데이터 로드
 data_path = Path("../data/kimchi_gold_price_log.csv")
@@ -26,6 +28,50 @@ df['날짜'] = pd.to_datetime(df['날짜'])
 # 국제 금 시세를 KRW/g으로 계산
 # 1 Troy Ounce = 31.1034768 grams
 df['International_KRW_g'] = df['국제금(달러/온스)'] * (1 / 31.1035) * df['환율(원/달러)']
+
+# 최신 데이터 추출
+latest = df.iloc[-1]
+latest_date = latest['날짜'].strftime('%Y-%m-%d')
+premium = latest['김치프리미엄(%)']
+domestic = latest['국내금(원/g)']
+intl = latest['International_KRW_g']
+rate = latest['환율(원/달러)']
+
+premium_color = "#e44d26" if premium >= 0 else "#264de4"  # Red-ish for positive, Blue-ish for negative
+```
+
+::: {.callout-note}
+### 김치 프리미엄이란?
+국내 금 가격이 국제 금 가격(환율 반영)보다 얼마나 비싸거나 싼지를 나타내는 지표입니다.
+**(+)** 값이면 국내가 더 비싸고(과열), **(-)** 값이면 국내가 더 저렴한 상태입니다.
+:::
+
+```{python}
+#| label: summary-cards
+#| echo: false
+#| output: asis
+
+html_cards = f"""
+<div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 30px;">
+  <div style="flex: 1; min-width: 200px; padding: 20px; border-radius: 10px; border: 1px solid #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; background-color: #f8f9fa;">
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">최종 업데이트 📅</div>
+    <div style="font-size: 1.5em; font-weight: bold;">{latest_date}</div>
+  </div>
+  <div style="flex: 1; min-width: 200px; padding: 20px; border-radius: 10px; border: 1px solid #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; background-color: #f8f9fa;">
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">김치 프리미엄 📊</div>
+    <div style="font-size: 1.5em; font-weight: bold; color: {premium_color};">{premium:+.2f}%</div>
+  </div>
+  <div style="flex: 1; min-width: 200px; padding: 20px; border-radius: 10px; border: 1px solid #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; background-color: #f8f9fa;">
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">국내 금 가격 🪙</div>
+    <div style="font-size: 1.5em; font-weight: bold;">{domestic:,.0f}원/g</div>
+  </div>
+  <div style="flex: 1; min-width: 200px; padding: 20px; border-radius: 10px; border: 1px solid #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; background-color: #f8f9fa;">
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">환율 💵</div>
+    <div style="font-size: 1.5em; font-weight: bold;">{rate:,.1f}원/$</div>
+  </div>
+</div>
+"""
+print(html_cards)
 ```
 
 ## 1. 김치 프리미엄 테이블 (최근 30일) 📅
