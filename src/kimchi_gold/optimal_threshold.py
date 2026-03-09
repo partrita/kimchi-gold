@@ -3,7 +3,7 @@ import argparse
 from datetime import datetime
 import sys
 from pathlib import Path
-from backtest import run_backtest, load_data
+from .backtest import run_backtest, load_data
 import numpy as np
 
 
