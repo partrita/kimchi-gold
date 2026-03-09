@@ -126,3 +126,21 @@ def test_get_usd_krw_success(mock_get_price):
     price = price_fetcher.fetch_usd_krw_exchange_rate()
     assert price == float(MOCK_USD_KRW_TEXT.replace(",", ""))
     mock_get_price.assert_called_once()
+
+
+def test_extract_price_invalid_values():
+    url = "http://example.com"
+    error_msg = "국내 금 가격 정보를 찾을 수 없습니다."
+
+    with (
+        patch("requests.get") as mock_get,
+        patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
+    ):
+        mock_get.return_value.content = b"<html><body><strong class='price'>0</strong></body></html>"
+        mock_soup_instance = mock_bs.return_value
+        mock_soup_instance.find.return_value.get_text.return_value = "0"
+
+        with pytest.raises(ValueError) as excinfo:
+            price_fetcher.extract_price_from_naver_finance(url, error_msg)
+        assert "유효하지 않은" in str(excinfo.value)
+        assert "0 이하" in str(excinfo.value)

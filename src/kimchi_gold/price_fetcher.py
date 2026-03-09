@@ -22,6 +22,26 @@ from .data_models import GoldPriceData
 logger = logging.getLogger(__name__)
 
 
+def validate_price(price: float, name: str) -> float:
+    """
+    추출된 가격 정보의 유효성을 검증합니다.
+
+    Args:
+        price: 검증할 가격
+        name: 가격 항목 이름 (로그/에러 메시지용)
+
+    Returns:
+        검증된 가격 (float)
+
+    Raises:
+        ValueError: 가격이 0 이하인 경우 (데이터가 비정상이거나 수집 오류)
+    """
+    if price <= 0:
+        logger.error(f"유효하지 않은 가격 감지 ({name}): {price}")
+        raise ValueError(f"유효하지 않은 {name} 값입니다. (0 이하)")
+    return price
+
+
 def extract_price_from_naver_finance(
     target_url: str,
     error_message: str,
@@ -55,7 +75,8 @@ def extract_price_from_naver_finance(
         text = price_tag.get_text()
         price_match = re.search(price_pattern, text)
         if price_match:
-            return float(price_match.group().replace(",", ""))
+            extracted_price = float(price_match.group().replace(",", ""))
+            return validate_price(extracted_price, error_message.split(" ")[0])
     raise ValueError(error_message)
 
 
