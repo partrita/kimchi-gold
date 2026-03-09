@@ -4,7 +4,8 @@
 
 import re
 import logging
-from typing import Tuple
+from typing import Tuple, Optional
+from concurrent.futures import ThreadPoolExecutor
 import requests
 from bs4 import BeautifulSoup
 
@@ -22,7 +23,9 @@ logger = logging.getLogger(__name__)
 
 
 def extract_price_from_naver_finance(
-    target_url: str, error_message: str, price_pattern: str = r"[\d,]+(?:\.\d+)?"
+    target_url: str,
+    error_message: str,
+    price_pattern: str = r"[\d,]+(?:\.\d+)?",
 ) -> float:
     """
     네이버 금융 페이지에서 가격 정보를 추출하는 공통 함수
@@ -116,6 +119,8 @@ def calculate_kimchi_premium_values(
 def fetch_current_gold_market_data() -> GoldPriceData:
     """
     현재 금 가격 데이터를 수집하고 김치 프리미엄을 계산합니다.
+    성능 최적화를 위해 ThreadPoolExecutor를 사용하여
+    여러 웹 페이지의 데이터를 병렬로 수집합니다.
 
     Returns:
         GoldPriceData 객체
@@ -124,12 +129,17 @@ def fetch_current_gold_market_data() -> GoldPriceData:
         ValueError: 데이터 수집 실패 시
     """
     try:
-        logger.info("금 가격 데이터 수집 시작")
+        logger.info("금 가격 데이터 수집 시작 (병렬)")
 
-        # 각 가격 정보 수집
-        domestic_gold_price = fetch_domestic_gold_price()
-        international_gold_price = fetch_international_gold_price()
-        current_usd_krw_rate = fetch_usd_krw_exchange_rate()
+        # 병렬로 데이터 수집
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            future_domestic = executor.submit(fetch_domestic_gold_price)
+            future_international = executor.submit(fetch_international_gold_price)
+            future_usd_krw = executor.submit(fetch_usd_krw_exchange_rate)
+
+            domestic_gold_price = future_domestic.result()
+            international_gold_price = future_international.result()
+            current_usd_krw_rate = future_usd_krw.result()
 
         # 국제 금 가격을 원/g으로 환산
         international_gold_price_krw_per_gram = (
