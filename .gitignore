@@ -177,5 +177,4 @@ cython_debug/
 /.quarto/
 website/.quarto/
 website/docs/
-
 .agent
