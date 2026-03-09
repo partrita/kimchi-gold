@@ -5,6 +5,7 @@
 import re
 import logging
 from typing import Tuple
+from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
 
@@ -19,6 +20,20 @@ from .data_models import GoldPriceData
 
 # 로깅 설정
 logger = logging.getLogger(__name__)
+
+# 보안 관련 상수
+ALLOWED_DOMAINS = {"m.stock.naver.com"}
+MAX_RESPONSE_SIZE = 1 * 1024 * 1024  # 1MB
+
+
+def validate_url_safety(url: str) -> None:
+    """
+    URL이 허용된 도메인에 속하는지 확인합니다.
+    """
+    parsed_url = urlparse(url)
+    if parsed_url.netloc not in ALLOWED_DOMAINS:
+        logger.error(f"허용되지 않은 도메인에 대한 접근 시도: {parsed_url.netloc}")
+        raise ValueError(f"허용되지 않은 URL입니다: {parsed_url.netloc}")
 
 
 def extract_price_from_naver_finance(
@@ -37,11 +52,26 @@ def extract_price_from_naver_finance(
 
     Raises:
         requests.RequestException: HTTP 요청 실패 시
-        ValueError: 가격 정보를 찾을 수 없을 시
+        ValueError: 가격 정보를 찾을 수 없을 시 또는 보안 검증 실패 시
     """
-    response = requests.get(target_url, headers=REQUEST_HEADERS, timeout=10)
-    response.raise_for_status()  # Raise an exception for bad status codes
-    soup = BeautifulSoup(response.content, "html.parser")
+    # 🛡️ Sentinel: URL 도메인 검증 (SSRF 방지)
+    validate_url_safety(target_url)
+
+    # 🛡️ Sentinel: 응답 크기 제한 (DoS 방지)를 위해 stream=True 사용
+    response = requests.get(target_url, headers=REQUEST_HEADERS, timeout=10, stream=True)
+    response.raise_for_status()
+
+    # Content-Length 확인
+    content_length = response.headers.get("Content-Length")
+    if content_length and int(content_length) > MAX_RESPONSE_SIZE:
+        raise ValueError("응답 크기가 너무 큽니다.")
+
+    # 실제 내용 읽기 (크기 제한)
+    content = response.raw.read(MAX_RESPONSE_SIZE + 1)
+    if len(content) > MAX_RESPONSE_SIZE:
+        raise ValueError("응답 데이터가 제한된 크기를 초과했습니다.")
+
+    soup = BeautifulSoup(content, "html.parser")
 
     # Find element with class containing "DetailInfo_price"
     price_tag = soup.find(
@@ -157,8 +187,10 @@ def fetch_current_gold_market_data() -> GoldPriceData:
         return gold_market_data
 
     except Exception as collection_error:
-        logger.error(f"금 가격 데이터 수집 실패: {collection_error}")
-        raise ValueError(f"금 가격 데이터를 가져올 수 없습니다: {collection_error}")
+        # 🛡️ Sentinel: 내부 예기치 못한 오류 정보가 외부로 유출되지 않도록 처리
+        logger.error(f"금 가격 데이터 수집 실패: {collection_error}", exc_info=True)
+        # generic error message to prevent info leakage
+        raise ValueError("금 가격 데이터를 가져오는 도중 오류가 발생했습니다. 나중에 다시 시도해주세요.")
 
 
 # 하위 호환성을 위한 레거시 함수들
