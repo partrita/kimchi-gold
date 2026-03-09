@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "김치 금 프리미엄 대시보드 💰📈",
     "section": "",
-    "text": "이 대시보드는 국제 금 시세와 비교한 국내 금 시세의 “김치 프리미엄”을 추적합니다. 데이터는 매일 업데이트됩니다.\nCode\nimport pandas as pd\nimport plotly.express as px\nimport plotly.graph_objects as go\nfrom pathlib import Path\n\n# 데이터 로드\ndata_path = Path(\"../data/kimchi_gold_price_log.csv\")\ndf = pd.read_csv(data_path)\ndf['날짜'] = pd.to_datetime(df['날짜'])\n\n# 국제 금 시세를 KRW/g으로 계산\n# 1 Troy Ounce = 31.1034768 grams\ndf['International_KRW_g'] = df['국제금(달러/온스)'] * (1 / 31.1035) * df['환율(원/달러)']"
+    "text": "이 대시보드는 국제 금 시세와 비교한 국내 금 시세의 “김치 프리미엄”을 추적합니다. 데이터는 매일 업데이트됩니다.\n&lt;div style=\"font-size: 0.9em; color: #666; margin-bottom: 5px;\"&gt;최종 업데이트 📅&lt;/div&gt;\n&lt;div style=\"font-size: 1.5em; font-weight: bold;\"&gt;2026-03-09&lt;/div&gt;\n\n\n&lt;div style=\"font-size: 0.9em; color: #666; margin-bottom: 5px;\"&gt;김치 프리미엄 📊&lt;/div&gt;\n&lt;div style=\"font-size: 1.5em; font-weight: bold; color: #264de4;\"&gt;-1.12%&lt;/div&gt;\n\n\n&lt;div style=\"font-size: 0.9em; color: #666; margin-bottom: 5px;\"&gt;국내 금 가격 🪙&lt;/div&gt;\n&lt;div style=\"font-size: 1.5em; font-weight: bold;\"&gt;241,950원/g&lt;/div&gt;\n\n\n&lt;div style=\"font-size: 0.9em; color: #666; margin-bottom: 5px;\"&gt;환율 💵&lt;/div&gt;\n&lt;div style=\"font-size: 1.5em; font-weight: bold;\"&gt;1,492.9원/$&lt;/div&gt;"
   },
   {
     "objectID": "index.html#김치-프리미엄-테이블-최근-30일",
