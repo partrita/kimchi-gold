@@ -6,6 +6,7 @@ import re
 import logging
 from typing import Tuple, Optional
 from concurrent.futures import ThreadPoolExecutor
+from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
 
@@ -62,6 +63,15 @@ def extract_price_from_naver_finance(
         requests.RequestException: HTTP 요청 실패 시
         ValueError: 가격 정보를 찾을 수 없을 시
     """
+    # SSRF Protection: Validate URL scheme and domain
+    parsed_url = urlparse(target_url)
+    if parsed_url.scheme not in ("http", "https"):
+        raise ValueError(f"Invalid URL scheme: {parsed_url.scheme}")
+
+    hostname = parsed_url.hostname or ""
+    if not (hostname == "naver.com" or hostname.endswith(".naver.com")):
+        raise ValueError(f"Invalid domain: {hostname}. Only naver.com and its subdomains are allowed.")
+
     response = requests.get(target_url, headers=REQUEST_HEADERS, timeout=10)
     response.raise_for_status()  # Raise an exception for bad status codes
     soup = BeautifulSoup(response.content, "html.parser")
