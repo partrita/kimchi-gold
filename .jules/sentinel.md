@@ -1,6 +1,4 @@
-# Sentinel Journal
-
-## 2026-03-09 - Price Validation Enhancement
-**Vulnerability:** Fetched gold prices from external web sources (Naver Finance) were used directly in calculations without validation. Malformed HTML or temporary zero-price service outages could result in `ZeroDivisionError` (DoS) or corrupted data logs.
-**Learning:** External data should never be trusted, even from reliable financial portals. Logic that performs division (like premium percentage) is particularly sensitive to zero values. 
-**Prevention:** Implement a `validate_price` layer for all scraped numbers to ensure they are positive floats before they reach the data processing or storage layers.
+## 2024-05-24 - [SSRF Protection]
+**Vulnerability:** Server-Side Request Forgery (SSRF) risk in `extract_price_from_naver_finance` due to unvalidated `target_url` parameter being passed directly to `requests.get`.
+**Learning:** Functions designed to fetch data from specific external sources must validate the URL scheme and domain to prevent arbitrary requests to internal or external services.
+**Prevention:** Implement URL validation using `urllib.parse.urlparse` to strictly enforce allowed schemes (`http`, `https`) and domains (e.g., `naver.com` and its subdomains) before making HTTP requests.
