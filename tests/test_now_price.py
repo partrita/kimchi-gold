@@ -8,7 +8,7 @@ MOCK_USD_KRW_TEXT = "1,355.67"
 
 
 def test_get_price_from_naver_success():
-    url = "http://example.com"
+    url = "https://finance.naver.com"
     error_msg = "테스트 에러 메시지"
 
     with (
@@ -41,7 +41,7 @@ def test_get_price_from_naver_success():
 
 
 def test_get_price_from_naver_no_price_tag():
-    url = "http://example.com"
+    url = "https://finance.naver.com"
     error_msg = "테스트 에러 메시지"
 
     with (
@@ -73,7 +73,7 @@ def test_get_price_from_naver_no_price_tag():
 
 
 def test_get_price_from_naver_no_price_in_text():
-    url = "http://example.com"
+    url = "https://finance.naver.com"
     error_msg = "테스트 에러 메시지"
 
     with (
@@ -129,7 +129,7 @@ def test_get_usd_krw_success(mock_get_price):
 
 
 def test_extract_price_invalid_values():
-    url = "http://example.com"
+    url = "https://finance.naver.com"
     error_msg = "국내 금 가격 정보를 찾을 수 없습니다."
 
     with (
@@ -144,3 +144,19 @@ def test_extract_price_invalid_values():
             price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert "유효하지 않은" in str(excinfo.value)
         assert "0 이하" in str(excinfo.value)
+
+
+def test_extract_price_ssrf_protection_invalid_scheme():
+    url = "ftp://finance.naver.com"
+    error_msg = "테스트 에러 메시지"
+    with pytest.raises(ValueError) as excinfo:
+        price_fetcher.extract_price_from_naver_finance(url, error_msg)
+    assert "Invalid URL scheme" in str(excinfo.value)
+
+
+def test_extract_price_ssrf_protection_invalid_domain():
+    url = "https://example.com"
+    error_msg = "테스트 에러 메시지"
+    with pytest.raises(ValueError) as excinfo:
+        price_fetcher.extract_price_from_naver_finance(url, error_msg)
+    assert "Invalid domain" in str(excinfo.value)
