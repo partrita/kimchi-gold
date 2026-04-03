@@ -15,6 +15,7 @@ def test_get_price_from_naver_success():
         patch("requests.get") as mock_get,
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
+        mock_get.return_value.is_redirect = False
         mock_get.return_value.content = f"""
             <html>
                 <body>
@@ -30,7 +31,7 @@ def test_get_price_from_naver_success():
         price = price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert price == float(MOCK_DOMESTIC_PRICE_TEXT.replace(",", ""))
         mock_get.assert_called_once_with(
-            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10
+            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10, allow_redirects=False
         )
         mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
         # class_ 파라미터가 람다 함수이므로 호출 여부만 확인
@@ -48,6 +49,7 @@ def test_get_price_from_naver_no_price_tag():
         patch("requests.get") as mock_get,
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
+        mock_get.return_value.is_redirect = False
         mock_get.return_value.content = """
             <html>
                 <body>
@@ -62,7 +64,7 @@ def test_get_price_from_naver_no_price_tag():
             price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert str(excinfo.value) == error_msg
         mock_get.assert_called_once_with(
-            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10
+            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10, allow_redirects=False
         )
         mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
         # class_ 파라미터가 람다 함수이므로 호출 여부만 확인
@@ -80,6 +82,7 @@ def test_get_price_from_naver_no_price_in_text():
         patch("requests.get") as mock_get,
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
+        mock_get.return_value.is_redirect = False
         mock_get.return_value.content = """
             <html>
                 <body>
@@ -94,7 +97,7 @@ def test_get_price_from_naver_no_price_in_text():
             price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert str(excinfo.value) == error_msg
         mock_get.assert_called_once_with(
-            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10
+            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10, allow_redirects=False
         )
         mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
         # class_ 파라미터가 람다 함수이므로 호출 여부만 확인
@@ -136,6 +139,7 @@ def test_extract_price_invalid_values():
         patch("requests.get") as mock_get,
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
+        mock_get.return_value.is_redirect = False
         mock_get.return_value.content = b"<html><body><strong class='price'>0</strong></body></html>"
         mock_soup_instance = mock_bs.return_value
         mock_soup_instance.find.return_value.get_text.return_value = "0"
@@ -160,3 +164,14 @@ def test_extract_price_ssrf_protection_invalid_domain():
     with pytest.raises(ValueError) as excinfo:
         price_fetcher.extract_price_from_naver_finance(url, error_msg)
     assert "Invalid domain" in str(excinfo.value)
+
+
+def test_extract_price_ssrf_protection_no_redirects():
+    url = "https://finance.naver.com"
+    error_msg = "테스트 에러 메시지"
+
+    with patch("requests.get") as mock_get:
+        mock_get.return_value.is_redirect = True
+        with pytest.raises(ValueError) as excinfo:
+            price_fetcher.extract_price_from_naver_finance(url, error_msg)
+        assert "Redirects are not allowed for security reasons" in str(excinfo.value)
