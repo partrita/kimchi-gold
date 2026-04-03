@@ -27,7 +27,7 @@ def run_optimization(data, initial_investment=1000000, start_date=None,
     # Generate threshold values to test
     thresholds = np.arange(threshold_min, threshold_max + threshold_step, threshold_step)
     
-    print(f"=== 최적 임계값 탐색 시작 ===")
+    print("=== 최적 임계값 탐색 시작 ===")
     print(f"테스트 범위: {threshold_min}% ~ {threshold_max}% (단계: {threshold_step}%)")
     print(f"총 테스트 횟수: {len(thresholds)}회")
     print("-" * 60)

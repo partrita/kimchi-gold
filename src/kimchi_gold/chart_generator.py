@@ -12,15 +12,14 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-
-# Increase recursion limit to handle matplotlib's deepcopy issues
-sys.setrecursionlimit(5000)
-
 from .configuration import (
     DATA_STORAGE_DIRECTORY,
     DEFAULT_CHART_DISPLAY_MONTHS,
     CHART_OUTPUT_FILE_NAME,
 )
+
+# Increase recursion limit to handle matplotlib's deepcopy issues
+sys.setrecursionlimit(5000)
 
 
 

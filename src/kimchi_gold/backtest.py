@@ -129,7 +129,7 @@ def run_backtest(data, initial_investment=1000000, start_date=None, buy_threshol
     total_return = final_value - initial_investment
     return_rate = (total_return / initial_investment) * 100
     
-    print(f"\n=== 백테스팅 결과 ===")
+    print("\n=== 백테스팅 결과 ===")
     print(f"초기 투자금: {initial_investment:,.0f}원")
     print(f"최종 포트폴리오 가치: {final_value:,.0f}원")
     print(f"총 수익: {total_return:,.0f}원")

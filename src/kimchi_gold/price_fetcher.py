@@ -4,7 +4,7 @@
 
 import re
 import logging
-from typing import Tuple, Optional
+from typing import Tuple
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
 import requests
@@ -72,7 +72,9 @@ def extract_price_from_naver_finance(
     if not (hostname == "naver.com" or hostname.endswith(".naver.com")):
         raise ValueError(f"Invalid domain: {hostname}. Only naver.com and its subdomains are allowed.")
 
-    response = requests.get(target_url, headers=REQUEST_HEADERS, timeout=10)
+    response = requests.get(target_url, headers=REQUEST_HEADERS, timeout=10, allow_redirects=False)
+    if response.is_redirect:
+        raise ValueError("Redirects are not allowed for security reasons (SSRF bypass risk).")
     response.raise_for_status()  # Raise an exception for bad status codes
     soup = BeautifulSoup(response.content, "html.parser")
 
