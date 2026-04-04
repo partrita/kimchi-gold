@@ -68,6 +68,9 @@ def extract_price_from_naver_finance(
     if parsed_url.scheme not in ("http", "https"):
         raise ValueError(f"Invalid URL scheme: {parsed_url.scheme}")
 
+    if "@" in parsed_url.netloc:
+        raise ValueError("URL must not contain userinfo (@)")
+
     hostname = parsed_url.hostname or ""
     if not (hostname == "naver.com" or hostname.endswith(".naver.com")):
         raise ValueError(f"Invalid domain: {hostname}. Only naver.com and its subdomains are allowed.")
