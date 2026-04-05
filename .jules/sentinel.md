@@ -12,3 +12,7 @@
 **Vulnerability:** Server-Side Request Forgery (SSRF) bypass in `extract_price_from_naver_finance` caused by passing URLs containing `@` (e.g., `http://127.0.0.1\@naver.com/`).
 **Learning:** Python's `urllib.parse.urlparse` and the HTTP client library (`urllib3` inside `requests`) parse URLs differently. When an attacker supplies a URL with basic auth characters (`@`), `urlparse` may identify the hostname as the part after the `@` (e.g., `naver.com`), satisfying domain allowlists. However, `urllib3` may treat the part before the `@` as the host (e.g., `127.0.0.1`), allowing requests to unauthorized destinations.
 **Prevention:** Explicitly block the `@` character in the `netloc` component of the parsed URL to prevent discrepancies between URL parsing libraries from being exploited to bypass domain validation.
+## 2026-04-05 - [GitHub Actions Script Injection Protection]
+**Vulnerability:** Script injection vulnerability in `.github/workflows/Daily_collect.yml` where action output was directly interpolated into `github-script` using `${{ }}`.
+**Learning:** Direct interpolation of unsanitized or dynamic output into inline scripts can allow attackers to break out of string context (e.g., using backticks) and execute arbitrary code with workflow privileges.
+**Prevention:** Always pass dynamic data to scripts via environment variables (e.g., `process.env`) instead of direct string interpolation.

@@ -49,10 +49,12 @@ jobs:
       - name: Check result and create issue
         if: steps.run_python.outputs.result == 'True'
         uses: actions/github-script@v7
+        env:
+          FULL_OUTPUT: ${{ steps.run_python.outputs.full_output }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fullOutput = `${{ steps.run_python.outputs.full_output }}`;
+            const fullOutput = process.env.FULL_OUTPUT || "";
             const lines = fullOutput.split('\n').filter(line => line.trim() !== '');
             // The first line is 'True', the second is "김치 프리미엄이 이상치입니다!",
             // then the detailed explanation follows.
