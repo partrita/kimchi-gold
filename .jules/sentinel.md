@@ -16,3 +16,7 @@
 **Vulnerability:** Script injection vulnerability in `.github/workflows/Daily_collect.yml` where action output was directly interpolated into `github-script` using `${{ }}`.
 **Learning:** Direct interpolation of unsanitized or dynamic output into inline scripts can allow attackers to break out of string context (e.g., using backticks) and execute arbitrary code with workflow privileges.
 **Prevention:** Always pass dynamic data to scripts via environment variables (e.g., `process.env`) instead of direct string interpolation.
+## 2024-05-18 - GitHub Actions Multiline Output Injection Vulnerability
+**Vulnerability:** The `GITHUB_OUTPUT` multiline assignment in `.github/workflows/Daily_collect.yml` used a hardcoded delimiter (`EOF`). If the output of `scripts/analyze_outlier.py` contained the exact string `EOF` on a new line, it could terminate the parameter assignment prematurely. Subsequent lines of the script's output would then be parsed as workflow commands, enabling a malicious script to inject commands into the runner environment.
+**Learning:** Hardcoding the delimiter makes the workflow susceptible to output injection if the executed script's output is not strictly controlled.
+**Prevention:** Always generate a random delimiter dynamically when writing multiline strings to `GITHUB_OUTPUT`. Example: `EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)`.
