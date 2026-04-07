@@ -6,6 +6,10 @@ on:
     - cron: '0 3 * * *'
   workflow_dispatch:  # 수동 실행도 가능하게 함
 
+permissions:
+  contents: write
+  issues: write
+
 jobs:
   collect:
     runs-on: ubuntu-latest
