@@ -158,6 +158,14 @@ def test_extract_price_ssrf_protection_invalid_scheme():
     assert "Invalid URL scheme" in str(excinfo.value)
 
 
+def test_extract_price_ssrf_protection_http_not_allowed():
+    url = "http://finance.naver.com"
+    error_msg = "테스트 에러 메시지"
+    with pytest.raises(ValueError) as excinfo:
+        price_fetcher.extract_price_from_naver_finance(url, error_msg)
+    assert "Only HTTPS is allowed for security" in str(excinfo.value)
+
+
 def test_extract_price_ssrf_protection_invalid_domain():
     url = "https://example.com"
     error_msg = "테스트 에러 메시지"
@@ -177,7 +185,7 @@ def test_extract_price_ssrf_protection_no_redirects():
         assert "Redirects are not allowed for security reasons" in str(excinfo.value)
 
 def test_extract_price_ssrf_protection_bypass():
-    url = "http://127.0.0.1\\@naver.com/"
+    url = "https://127.0.0.1\\@naver.com/"
     error_msg = "테스트 에러 메시지"
     with pytest.raises(ValueError) as excinfo:
         price_fetcher.extract_price_from_naver_finance(url, error_msg)

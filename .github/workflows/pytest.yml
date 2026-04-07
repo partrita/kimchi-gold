@@ -6,6 +6,9 @@ on:
       - main   # 또는 원하는 브랜치명(ex: master, develop 등)
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
