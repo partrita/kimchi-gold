@@ -36,9 +36,10 @@ jobs:
         id: run_python
         run: |
           output=$(uv run python scripts/analyze_outlier.py)
-          echo "full_output<<EOF" >> $GITHUB_OUTPUT
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "full_output<<$EOF" >> $GITHUB_OUTPUT
           echo "$output" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
           # The first line of output is still 'True' or 'False'
           result=$(echo "$output" | head -1)
           echo "result=$result" >> $GITHUB_OUTPUT
