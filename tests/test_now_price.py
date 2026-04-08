@@ -16,13 +16,14 @@ def test_get_price_from_naver_success():
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
         mock_get.return_value.is_redirect = False
-        mock_get.return_value.content = f"""
+        content = f"""
             <html>
                 <body>
                     <strong class="DetailInfo_price__I_VJn">{MOCK_DOMESTIC_PRICE_TEXT}</strong>
                 </body>
             </html>
         """.encode("utf-8")
+        mock_get.return_value.iter_content.return_value = [content]
         mock_soup_instance = mock_bs.return_value
         mock_soup_instance.find.return_value.get_text.return_value = (
             MOCK_DOMESTIC_PRICE_TEXT
@@ -31,9 +32,9 @@ def test_get_price_from_naver_success():
         price = price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert price == float(MOCK_DOMESTIC_PRICE_TEXT.replace(",", ""))
         mock_get.assert_called_once_with(
-            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10, allow_redirects=False
+            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10, allow_redirects=False, stream=True
         )
-        mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
+        mock_bs.assert_called_once_with(content, "html.parser")
         # class_ 파라미터가 람다 함수이므로 호출 여부만 확인
         mock_soup_instance.find.assert_called_once()
         call_args = mock_soup_instance.find.call_args
@@ -50,13 +51,14 @@ def test_get_price_from_naver_no_price_tag():
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
         mock_get.return_value.is_redirect = False
-        mock_get.return_value.content = """
+        content = """
             <html>
                 <body>
                     <div>No price here</div>
                 </body>
             </html>
         """.encode("utf-8")
+        mock_get.return_value.iter_content.return_value = [content]
         mock_soup_instance = mock_bs.return_value
         mock_soup_instance.find.return_value = None
 
@@ -64,9 +66,9 @@ def test_get_price_from_naver_no_price_tag():
             price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert str(excinfo.value) == error_msg
         mock_get.assert_called_once_with(
-            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10, allow_redirects=False
+            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10, allow_redirects=False, stream=True
         )
-        mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
+        mock_bs.assert_called_once_with(content, "html.parser")
         # class_ 파라미터가 람다 함수이므로 호출 여부만 확인
         mock_soup_instance.find.assert_called_once()
         call_args = mock_soup_instance.find.call_args
@@ -83,13 +85,14 @@ def test_get_price_from_naver_no_price_in_text():
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
         mock_get.return_value.is_redirect = False
-        mock_get.return_value.content = """
+        content = """
             <html>
                 <body>
                     <strong class="DetailInfo_price__I_VJn">문자열</strong>
                 </body>
             </html>
         """.encode("utf-8")
+        mock_get.return_value.iter_content.return_value = [content]
         mock_soup_instance = mock_bs.return_value
         mock_soup_instance.find.return_value.get_text.return_value = "문자열"
 
@@ -97,9 +100,9 @@ def test_get_price_from_naver_no_price_in_text():
             price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert str(excinfo.value) == error_msg
         mock_get.assert_called_once_with(
-            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10, allow_redirects=False
+            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10, allow_redirects=False, stream=True
         )
-        mock_bs.assert_called_once_with(mock_get.return_value.content, "html.parser")
+        mock_bs.assert_called_once_with(content, "html.parser")
         # class_ 파라미터가 람다 함수이므로 호출 여부만 확인
         mock_soup_instance.find.assert_called_once()
         call_args = mock_soup_instance.find.call_args
@@ -140,7 +143,7 @@ def test_extract_price_invalid_values():
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
         mock_get.return_value.is_redirect = False
-        mock_get.return_value.content = b"<html><body><strong class='price'>0</strong></body></html>"
+        mock_get.return_value.iter_content.return_value = [b"<html><body><strong class='price'>0</strong></body></html>"]
         mock_soup_instance = mock_bs.return_value
         mock_soup_instance.find.return_value.get_text.return_value = "0"
 

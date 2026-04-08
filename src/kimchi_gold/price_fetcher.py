@@ -75,11 +75,20 @@ def extract_price_from_naver_finance(
     if not (hostname == "naver.com" or hostname.endswith(".naver.com")):
         raise ValueError(f"Invalid domain: {hostname}. Only naver.com and its subdomains are allowed.")
 
-    response = requests.get(target_url, headers=REQUEST_HEADERS, timeout=10, allow_redirects=False)
+    response = requests.get(target_url, headers=REQUEST_HEADERS, timeout=10, allow_redirects=False, stream=True)
     if response.is_redirect:
         raise ValueError("Redirects are not allowed for security reasons (SSRF bypass risk).")
     response.raise_for_status()  # Raise an exception for bad status codes
-    soup = BeautifulSoup(response.content, "html.parser")
+
+    # DoS Protection: Limit response size (e.g., 5MB)
+    max_size = 5 * 1024 * 1024
+    content = b""
+    for chunk in response.iter_content(chunk_size=8192):
+        content += chunk
+        if len(content) > max_size:
+            raise ValueError("Response size exceeds the maximum limit (5MB). Potential DoS risk.")
+
+    soup = BeautifulSoup(content, "html.parser")
 
     # Find element with class containing "DetailInfo_price"
     price_tag = soup.find(
