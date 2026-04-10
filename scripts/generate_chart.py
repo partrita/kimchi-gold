@@ -9,7 +9,6 @@
 import sys
 import importlib.util
 from pathlib import Path
-from datetime import datetime, timedelta
 
 # Setup paths
 project_root = Path(__file__).resolve().parent.parent
@@ -55,7 +54,5 @@ if __name__ == "__main__":
             f"성공적으로 {output_chart_image_file}에 저장되었습니다"
         )
     except Exception as chart_generation_error:
-        import traceback
         print(f"시각화 실패: {chart_generation_error}")
-        traceback.print_exc()
         sys.exit(1)
