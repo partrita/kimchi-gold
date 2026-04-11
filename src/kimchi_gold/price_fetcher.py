@@ -71,6 +71,9 @@ def extract_price_from_naver_finance(
     if "@" in parsed_url.netloc:
         raise ValueError("URL must not contain userinfo (@)")
 
+    if "\\" in parsed_url.netloc:
+        raise ValueError("URL must not contain backslashes (\\)")
+
     hostname = parsed_url.hostname or ""
     if not (hostname == "naver.com" or hostname.endswith(".naver.com")):
         raise ValueError(f"Invalid domain: {hostname}. Only naver.com and its subdomains are allowed.")
