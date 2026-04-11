@@ -11,3 +11,8 @@
 **Vulnerability:** Internal error handling in automation scripts (`scripts/collect_data.py`, `scripts/analyze_outlier.py`, `scripts/generate_chart.py`) was leaking stack traces via `logger.error(..., exc_info=True)` and `traceback.print_exc()`, potentially exposing sensitive internal details in GitHub Actions logs.
 **Learning:** Overly verbose logging designed for debugging during local development was left in production scripts executed in a CI/CD environment, violating the "fail securely" principle.
 **Prevention:** Avoid using `exc_info=True` or `traceback.print_exc()` in non-debug logging contexts, specifically in scripts designed to execute via CI/CD platforms, ensuring error messages are descriptive but do not reveal internal implementation details.
+
+## 2024-04-11 - [Security Enhancement] SSRF Bypass via Backslash Normalization
+**Vulnerability:** URL validation using `urlparse` allowed a bypass using the backslash `\` character in the domain (e.g. `https://127.0.0.1\.naver.com/`). `urlparse` treats the backslash as part of the `netloc`, passing domain suffix checks, while HTTP clients like `requests` normalize the `\` to `/`, routing the request to the IP Address `127.0.0.1` instead.
+**Learning:** Checking for specific string suffixes like `.endswith(".naver.com")` after extracting components via `urllib.parse` is prone to bypasses because libraries resolving the request might parse and normalize the input differently than Python's standard `urlparse`.
+**Prevention:** In addition to verifying the domain name suffix, explicitly reject any URLs that contain invalid hostname characters like `@` or `\` in the `netloc`.
