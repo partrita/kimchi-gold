@@ -201,3 +201,11 @@ def test_extract_price_ssrf_protection_backslash_bypass():
     with pytest.raises(ValueError) as excinfo:
         price_fetcher.extract_price_from_naver_finance(url, error_msg)
     assert "URL must not contain backslashes" in str(excinfo.value)
+
+
+def test_extract_price_ssrf_protection_invalid_port():
+    url = "https://finance.naver.com:8080/"
+    error_msg = "테스트 에러 메시지"
+    with pytest.raises(ValueError) as excinfo:
+        price_fetcher.extract_price_from_naver_finance(url, error_msg)
+    assert "Invalid port" in str(excinfo.value)
