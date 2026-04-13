@@ -16,3 +16,8 @@
 **Vulnerability:** URL validation using `urlparse` allowed a bypass using the backslash `\` character in the domain (e.g. `https://127.0.0.1\.naver.com/`). `urlparse` treats the backslash as part of the `netloc`, passing domain suffix checks, while HTTP clients like `requests` normalize the `\` to `/`, routing the request to the IP Address `127.0.0.1` instead.
 **Learning:** Checking for specific string suffixes like `.endswith(".naver.com")` after extracting components via `urllib.parse` is prone to bypasses because libraries resolving the request might parse and normalize the input differently than Python's standard `urlparse`.
 **Prevention:** In addition to verifying the domain name suffix, explicitly reject any URLs that contain invalid hostname characters like `@` or `\` in the `netloc`.
+
+## 2026-04-13 - [Security Enhancement] SSRF Bypass via Internal Ports
+**Vulnerability:** URL validation did not check the requested port, allowing potential SSRF bypasses to internal services running on non-standard ports (e.g., Redis on 6379, databases on 5432, custom internal APIs on 8080) if an attacker managed to bypass domain validation.
+**Learning:** Only validating the URL scheme (`https`) and domain is insufficient defense-in-depth, as attackers can specify arbitrary ports to scan or interact with internal infrastructure.
+**Prevention:** Explicitly validate `parsed_url.port` and only permit standard web ports (e.g. `443` or `None` which implies the default for the scheme) during data fetching operations.
