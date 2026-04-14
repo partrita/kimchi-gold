@@ -15,7 +15,7 @@ def test_get_price_from_naver_success():
         patch("requests.get") as mock_get,
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
-        mock_get.return_value.is_redirect = False
+        mock_get.return_value.__enter__.return_value.is_redirect = False
         content = f"""
             <html>
                 <body>
@@ -23,7 +23,7 @@ def test_get_price_from_naver_success():
                 </body>
             </html>
         """.encode("utf-8")
-        mock_get.return_value.iter_content.return_value = [content]
+        mock_get.return_value.__enter__.return_value.iter_content.return_value = [content]
         mock_soup_instance = mock_bs.return_value
         mock_soup_instance.find.return_value.get_text.return_value = (
             MOCK_DOMESTIC_PRICE_TEXT
@@ -50,7 +50,7 @@ def test_get_price_from_naver_no_price_tag():
         patch("requests.get") as mock_get,
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
-        mock_get.return_value.is_redirect = False
+        mock_get.return_value.__enter__.return_value.is_redirect = False
         content = """
             <html>
                 <body>
@@ -58,7 +58,7 @@ def test_get_price_from_naver_no_price_tag():
                 </body>
             </html>
         """.encode("utf-8")
-        mock_get.return_value.iter_content.return_value = [content]
+        mock_get.return_value.__enter__.return_value.iter_content.return_value = [content]
         mock_soup_instance = mock_bs.return_value
         mock_soup_instance.find.return_value = None
 
@@ -84,7 +84,7 @@ def test_get_price_from_naver_no_price_in_text():
         patch("requests.get") as mock_get,
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
-        mock_get.return_value.is_redirect = False
+        mock_get.return_value.__enter__.return_value.is_redirect = False
         content = """
             <html>
                 <body>
@@ -92,7 +92,7 @@ def test_get_price_from_naver_no_price_in_text():
                 </body>
             </html>
         """.encode("utf-8")
-        mock_get.return_value.iter_content.return_value = [content]
+        mock_get.return_value.__enter__.return_value.iter_content.return_value = [content]
         mock_soup_instance = mock_bs.return_value
         mock_soup_instance.find.return_value.get_text.return_value = "문자열"
 
@@ -142,8 +142,8 @@ def test_extract_price_invalid_values():
         patch("requests.get") as mock_get,
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
-        mock_get.return_value.is_redirect = False
-        mock_get.return_value.iter_content.return_value = [b"<html><body><strong class='price'>0</strong></body></html>"]
+        mock_get.return_value.__enter__.return_value.is_redirect = False
+        mock_get.return_value.__enter__.return_value.iter_content.return_value = [b"<html><body><strong class='price'>0</strong></body></html>"]
         mock_soup_instance = mock_bs.return_value
         mock_soup_instance.find.return_value.get_text.return_value = "0"
 

@@ -21,3 +21,8 @@
 **Vulnerability:** URL validation did not check the requested port, allowing potential SSRF bypasses to internal services running on non-standard ports (e.g., Redis on 6379, databases on 5432, custom internal APIs on 8080) if an attacker managed to bypass domain validation.
 **Learning:** Only validating the URL scheme (`https`) and domain is insufficient defense-in-depth, as attackers can specify arbitrary ports to scan or interact with internal infrastructure.
 **Prevention:** Explicitly validate `parsed_url.port` and only permit standard web ports (e.g. `443` or `None` which implies the default for the scheme) during data fetching operations.
+
+## 2026-04-14 - [Vulnerability] Connection Pool Exhaustion DoS
+**Vulnerability:** `requests.get` with `stream=True` was used without a `with` context manager. When a `ValueError` was raised for exceeding the size limit (5MB), the underlying connection was not guaranteed to be released back to the pool, leading to resource exhaustion (DoS) when many requests hit the limit.
+**Learning:** Reading chunked responses using `iter_content` leaves the connection open if not fully consumed. Raising exceptions before the end of the stream without explicitly closing the response leaks connections.
+**Prevention:** Always wrap `requests.get(..., stream=True)` in a `with` context manager to ensure the connection is closed and released, even if an exception is raised early.
