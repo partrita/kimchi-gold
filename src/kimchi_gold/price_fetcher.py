@@ -88,11 +88,14 @@ def extract_price_from_naver_finance(
 
         # DoS Protection: Limit response size (e.g., 5MB)
         max_size = 5 * 1024 * 1024
-        content = b""
+        chunks = []
+        current_size = 0
         for chunk in response.iter_content(chunk_size=8192):
-            content += chunk
-            if len(content) > max_size:
+            chunks.append(chunk)
+            current_size += len(chunk)
+            if current_size > max_size:
                 raise ValueError("Response size exceeds the maximum limit (5MB). Potential DoS risk.")
+        content = b"".join(chunks)
 
     soup = BeautifulSoup(content, "html.parser")
 
