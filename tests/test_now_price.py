@@ -16,6 +16,7 @@ def test_get_price_from_naver_success():
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
         mock_get.return_value.__enter__.return_value.is_redirect = False
+        mock_get.return_value.__enter__.return_value.headers = {"Content-Type": "text/html; charset=utf-8"}
         content = f"""
             <html>
                 <body>
@@ -51,6 +52,7 @@ def test_get_price_from_naver_no_price_tag():
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
         mock_get.return_value.__enter__.return_value.is_redirect = False
+        mock_get.return_value.__enter__.return_value.headers = {"Content-Type": "text/html"}
         content = """
             <html>
                 <body>
@@ -85,6 +87,7 @@ def test_get_price_from_naver_no_price_in_text():
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
         mock_get.return_value.__enter__.return_value.is_redirect = False
+        mock_get.return_value.__enter__.return_value.headers = {"Content-Type": "text/html"}
         content = """
             <html>
                 <body>
@@ -143,6 +146,7 @@ def test_extract_price_invalid_values():
         patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
     ):
         mock_get.return_value.__enter__.return_value.is_redirect = False
+        mock_get.return_value.__enter__.return_value.headers = {"Content-Type": "text/html"}
         mock_get.return_value.__enter__.return_value.iter_content.return_value = [b"<html><body><strong class='price'>0</strong></body></html>"]
         mock_soup_instance = mock_bs.return_value
         mock_soup_instance.find.return_value.get_text.return_value = "0"
@@ -209,3 +213,34 @@ def test_extract_price_ssrf_protection_invalid_port():
     with pytest.raises(ValueError) as excinfo:
         price_fetcher.extract_price_from_naver_finance(url, error_msg)
     assert "Invalid port" in str(excinfo.value)
+
+
+def test_extract_price_invalid_content_type():
+    url = "https://finance.naver.com"
+    error_msg = "테스트 에러 메시지"
+
+    with patch("requests.get") as mock_get:
+        mock_get.return_value.__enter__.return_value.is_redirect = False
+        mock_get.return_value.__enter__.return_value.headers = {"Content-Type": "application/json"}
+
+        with pytest.raises(ValueError) as excinfo:
+            price_fetcher.extract_price_from_naver_finance(url, error_msg)
+        assert "Invalid Content-Type" in str(excinfo.value)
+
+def test_extract_price_slow_read_dos_timeout():
+    url = "https://finance.naver.com"
+    error_msg = "테스트 에러 메시지"
+
+    with patch("requests.get") as mock_get, patch("kimchi_gold.price_fetcher.time.time") as mock_time:
+        mock_get.return_value.__enter__.return_value.is_redirect = False
+        mock_get.return_value.__enter__.return_value.headers = {"Content-Type": "text/html"}
+
+        # iter_content yields two chunks
+        mock_get.return_value.__enter__.return_value.iter_content.return_value = [b"chunk1", b"chunk2"]
+
+        # Simulate time passing more than 10 seconds between chunks
+        mock_time.side_effect = [0, 0, 11] # first call sets start_time, second call in first iteration loop, third call in second iteration loop
+
+        with pytest.raises(ValueError) as excinfo:
+            price_fetcher.extract_price_from_naver_finance(url, error_msg)
+        assert "Response reading timed out (Slowloris mitigation)." in str(excinfo.value)
