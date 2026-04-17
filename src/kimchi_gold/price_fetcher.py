@@ -96,12 +96,12 @@ def extract_price_from_naver_finance(
         max_size = 5 * 1024 * 1024
         chunks = []
         current_size = 0
-        start_time = time.time()
+        start_time = time.monotonic()
         timeout_seconds = 10.0
 
         for chunk in response.iter_content(chunk_size=8192):
             # Slow-read DoS mitigation
-            if time.time() - start_time > timeout_seconds:
+            if time.monotonic() - start_time > timeout_seconds:
                 raise ValueError("Response reading timed out (Slowloris mitigation).")
 
             chunks.append(chunk)
