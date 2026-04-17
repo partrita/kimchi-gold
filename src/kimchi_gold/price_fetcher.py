@@ -3,6 +3,7 @@
 """
 
 import re
+import time
 import logging
 from typing import Tuple
 from concurrent.futures import ThreadPoolExecutor
@@ -86,11 +87,23 @@ def extract_price_from_naver_finance(
             raise ValueError("Redirects are not allowed for security reasons (SSRF bypass risk).")
         response.raise_for_status()  # Raise an exception for bad status codes
 
-        # DoS Protection: Limit response size (e.g., 5MB)
+        # Mitigate unintended payloads by checking Content-Type
+        content_type = response.headers.get("Content-Type", "")
+        if not content_type.lower().startswith("text/html"):
+            raise ValueError(f"Invalid Content-Type: {content_type}. Only text/html is allowed.")
+
+        # DoS Protection: Limit response size (e.g., 5MB) and time limit
         max_size = 5 * 1024 * 1024
         chunks = []
         current_size = 0
+        start_time = time.monotonic()
+        timeout_seconds = 10.0
+
         for chunk in response.iter_content(chunk_size=8192):
+            # Slow-read DoS mitigation
+            if time.monotonic() - start_time > timeout_seconds:
+                raise ValueError("Response reading timed out (Slowloris mitigation).")
+
             chunks.append(chunk)
             current_size += len(chunk)
             if current_size > max_size:
