@@ -231,7 +231,7 @@ def test_extract_price_slow_read_dos_timeout():
     url = "https://finance.naver.com"
     error_msg = "테스트 에러 메시지"
 
-    with patch("requests.get") as mock_get, patch("kimchi_gold.price_fetcher.time.time") as mock_time:
+    with patch("requests.get") as mock_get, patch("kimchi_gold.price_fetcher.time.monotonic") as mock_time:
         mock_get.return_value.__enter__.return_value.is_redirect = False
         mock_get.return_value.__enter__.return_value.headers = {"Content-Type": "text/html"}
 
