@@ -108,7 +108,12 @@ def extract_price_from_naver_finance(
 
         # Fail-fast on Content-Length if provided
         content_length = response.headers.get("Content-Length")
-        if content_length and int(content_length) > max_size:
+        try:
+            if content_length and int(content_length) > max_size:
+                raise ValueError("Response size exceeds the maximum limit (5MB) based on Content-Length. Potential DoS risk.")
+        except ValueError:
+            # Ignore malformed Content-Length and fall back to the stream size check
+            pass
             raise ValueError("Response size exceeds the maximum limit (5MB) based on Content-Length. Potential DoS risk.")
 
         chunks = []
