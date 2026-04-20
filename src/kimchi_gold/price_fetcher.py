@@ -105,6 +105,12 @@ def extract_price_from_naver_finance(
 
         # DoS Protection: Limit response size (e.g., 5MB) and time limit
         max_size = 5 * 1024 * 1024
+
+        # Fail-fast on Content-Length if provided
+        content_length = response.headers.get("Content-Length")
+        if content_length and int(content_length) > max_size:
+            raise ValueError("Response size exceeds the maximum limit (5MB) based on Content-Length. Potential DoS risk.")
+
         chunks = []
         current_size = 0
         start_time = time.monotonic()
@@ -219,9 +225,9 @@ def fetch_current_gold_market_data() -> GoldPriceData:
             future_international = executor.submit(fetch_international_gold_price)
             future_usd_krw = executor.submit(fetch_usd_krw_exchange_rate)
 
-            domestic_gold_price = future_domestic.result()
-            international_gold_price = future_international.result()
-            current_usd_krw_rate = future_usd_krw.result()
+            domestic_gold_price = future_domestic.result(timeout=15)
+            international_gold_price = future_international.result(timeout=15)
+            current_usd_krw_rate = future_usd_krw.result(timeout=15)
 
         # 국제 금 가격을 원/g으로 환산
         international_gold_price_krw_per_gram = (
