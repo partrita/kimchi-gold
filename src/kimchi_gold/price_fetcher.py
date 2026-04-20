@@ -5,6 +5,7 @@
 import re
 import time
 import logging
+import math
 from typing import Tuple
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
@@ -36,11 +37,21 @@ def validate_price(price: float, name: str) -> float:
         검증된 가격 (float)
 
     Raises:
-        ValueError: 가격이 0 이하인 경우 (데이터가 비정상이거나 수집 오류)
+        ValueError: 가격이 0 이하이거나 비정상적인 값인 경우
     """
+    if math.isnan(price) or math.isinf(price):
+        logger.error(f"비정상적인 가격(NaN/Inf) 감지 ({name}): {price}")
+        raise ValueError(f"유효하지 않은 {name} 값입니다. (NaN/Inf)")
+
     if price <= 0:
         logger.error(f"유효하지 않은 가격 감지 ({name}): {price}")
         raise ValueError(f"유효하지 않은 {name} 값입니다. (0 이하)")
+
+    # 10억 이상의 가격은 비정상으로 간주 (단위 변경이나 파싱 오류 방지)
+    if price > 1_000_000_000:
+        logger.error(f"비정상적으로 큰 가격 감지 ({name}): {price}")
+        raise ValueError(f"유효하지 않은 {name} 값입니다. (비정상적으로 큰 값)")
+
     return price
 
 
@@ -121,7 +132,11 @@ def extract_price_from_naver_finance(
         text = price_tag.get_text()
         price_match = re.search(price_pattern, text)
         if price_match:
-            extracted_price = float(price_match.group().replace(",", ""))
+            matched_string = price_match.group().replace(",", "")
+            # Security Enhancement: Prevent algorithmic complexity DoS by limiting string length before float()
+            if len(matched_string) > 50:
+                raise ValueError("추출된 가격 문자열이 너무 깁니다. (DoS 방지)")
+            extracted_price = float(matched_string)
             return validate_price(extracted_price, error_message.split(" ")[0])
     raise ValueError(error_message)
 
