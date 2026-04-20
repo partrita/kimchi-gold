@@ -227,6 +227,21 @@ def test_extract_price_invalid_content_type():
             price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert "Invalid Content-Type" in str(excinfo.value)
 
+def test_extract_price_content_length_exceeds_limit():
+    url = "https://finance.naver.com"
+    error_msg = "테스트 에러 메시지"
+
+    with patch("requests.get") as mock_get:
+        mock_get.return_value.__enter__.return_value.is_redirect = False
+        mock_get.return_value.__enter__.return_value.headers = {
+            "Content-Type": "text/html",
+            "Content-Length": str(6 * 1024 * 1024) # 6MB, exceeds 5MB
+        }
+
+        with pytest.raises(ValueError) as excinfo:
+            price_fetcher.extract_price_from_naver_finance(url, error_msg)
+        assert "Response size exceeds the maximum limit (5MB) based on Content-Length." in str(excinfo.value)
+
 def test_extract_price_slow_read_dos_timeout():
     url = "https://finance.naver.com"
     error_msg = "테스트 에러 메시지"
