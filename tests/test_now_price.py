@@ -215,6 +215,14 @@ def test_extract_price_ssrf_protection_invalid_port():
     assert "Invalid port" in str(excinfo.value)
 
 
+def test_extract_price_ssrf_protection_invalid_hostname_characters():
+    url = "https://finance.naver。com/"
+    error_msg = "테스트 에러 메시지"
+    with pytest.raises(ValueError) as excinfo:
+        price_fetcher.extract_price_from_naver_finance(url, error_msg)
+    assert "Invalid hostname characters" in str(excinfo.value)
+
+
 def test_extract_price_invalid_content_type():
     url = "https://finance.naver.com"
     error_msg = "테스트 에러 메시지"
