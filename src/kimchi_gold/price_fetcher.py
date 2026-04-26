@@ -90,6 +90,11 @@ def extract_price_from_naver_finance(
         raise ValueError(f"Invalid port: {parsed_url.port}. Only standard HTTPS port (443) is allowed.")
 
     hostname = parsed_url.hostname or ""
+
+    # Security Enhancement: Prevent IDNA/homograph attacks and parsing discrepancies
+    if not re.match(r"^[a-zA-Z0-9.-]+$", hostname):
+        raise ValueError(f"Invalid hostname characters: {hostname}")
+
     if not (hostname == "naver.com" or hostname.endswith(".naver.com")):
         raise ValueError(f"Invalid domain: {hostname}. Only naver.com and its subdomains are allowed.")
 
