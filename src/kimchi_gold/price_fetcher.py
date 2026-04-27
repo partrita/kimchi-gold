@@ -92,7 +92,7 @@ def extract_price_from_naver_finance(
     hostname = parsed_url.hostname or ""
 
     # Security Enhancement: Prevent IDNA/homograph attacks and parsing discrepancies
-    if not re.match(r"^[a-zA-Z0-9.-]+$", hostname):
+    if not re.fullmatch(r"[a-zA-Z0-9.-]+", hostname):
         raise ValueError(f"Invalid hostname characters: {hostname}")
 
     if not (hostname == "naver.com" or hostname.endswith(".naver.com")):
