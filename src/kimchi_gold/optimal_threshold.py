@@ -190,6 +190,24 @@ def main():
         print(f"Error loading data: {e}")
         sys.exit(1)
     
+    # Validation
+    if args.investment <= 0:
+        print("Error: Investment must be greater than 0.")
+        sys.exit(1)
+
+    if args.step <= 0:
+        print("Error: Step size must be greater than 0.")
+        sys.exit(1)
+
+    if args.min_threshold > args.max_threshold:
+        print("Error: Minimum threshold cannot be greater than maximum threshold.")
+        sys.exit(1)
+
+    total_steps = (args.max_threshold - args.min_threshold) / args.step
+    if total_steps > 10000:
+        print("Error: Too many test iterations requested. Please increase step size or narrow the threshold range to prevent excessive resource consumption.")
+        sys.exit(1)
+
     # Run optimization
     results = run_optimization(
         data,
