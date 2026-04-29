@@ -220,6 +220,10 @@ def main():
         print(f"Error loading data: {e}")
         sys.exit(1)
 
+    if args.investment <= 0:
+        print("Error: Investment must be greater than 0.")
+        sys.exit(1)
+
     # Run backtest
     run_backtest(
         data,
