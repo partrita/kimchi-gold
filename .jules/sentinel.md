@@ -52,3 +52,7 @@
 **Vulnerability:** Numerical thresholds such as step sizes and bounds (`threshold_step`) in loops or generator functions like `numpy.arange` were passed directly without being validated, making them vulnerable to `ZeroDivisionError` (if step=0) or an Algorithmic Complexity DoS condition by creating immense iterations (if step is an extremely small fraction).
 **Learning:** Functions orchestrating loops, ranges, and array generation should not blindly trust input variables passed to them without validation, especially if those variables could be user-controlled CLI parameters.
 **Prevention:** Strictly enforce mathematical bounds (`> 0`) on parameter types like step increments and array dimensions, immediately rejecting negative or zero values.
+## 2025-04-29 - [Missing CLI Parameter Validation]
+**Vulnerability:** Unbounded CLI parameters and potential for ZeroDivisionError in `optimal_threshold.py` and `backtest.py` via an initial investment <= 0 or extreme float ranges.
+**Learning:** External parameters, like CLI arguments, can be crafted to consume excessive memory or divide-by-zero, leading to application crashes.
+**Prevention:** Implement strict boundary checks on numeric inputs to prevent both memory exhaustion via unbounded arrays and fatal errors like ZeroDivisionError.
