@@ -56,3 +56,8 @@
 **Vulnerability:** Unbounded CLI parameters and potential for ZeroDivisionError in `optimal_threshold.py` and `backtest.py` via an initial investment <= 0 or extreme float ranges.
 **Learning:** External parameters, like CLI arguments, can be crafted to consume excessive memory or divide-by-zero, leading to application crashes.
 **Prevention:** Implement strict boundary checks on numeric inputs to prevent both memory exhaustion via unbounded arrays and fatal errors like ZeroDivisionError.
+
+## 2026-05-18 - [Security Enhancement] Enforce Strict Connection Timeouts
+**Vulnerability:** External data fetching used a single integer timeout (`timeout=10`) in `requests.get()`. This single value applies to both the connection phase and the read phase. A malicious or uncooperative server could act as a tarpit, accepting the TCP connection but never responding, tying up client resources for the full duration or longer if not carefully managed.
+**Learning:** Using a single timeout value in `requests` can lead to resource exhaustion if many connections hang during the initial handshake. Best practice dictates separating connection and read timeouts.
+**Prevention:** Always use a tuple for the `timeout` parameter (e.g., `timeout=(3.0, 10.0)`) to ensure the application fails fast if a connection cannot be quickly established, thereby preventing Denial of Service (DoS) via resource exhaustion.
