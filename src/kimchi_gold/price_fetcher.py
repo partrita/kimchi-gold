@@ -98,7 +98,9 @@ def extract_price_from_naver_finance(
     if not (hostname == "naver.com" or hostname.endswith(".naver.com")):
         raise ValueError(f"Invalid domain: {hostname}. Only naver.com and its subdomains are allowed.")
 
-    with requests.get(target_url, headers=REQUEST_HEADERS, timeout=10, allow_redirects=False, stream=True) as response:
+    # Security Enhancement: Separate connect and read timeouts (3.0s connect, 10.0s read)
+    # to prevent resource exhaustion from hanging connections (tarpits).
+    with requests.get(target_url, headers=REQUEST_HEADERS, timeout=(3.0, 10.0), allow_redirects=False, stream=True) as response:
         if response.is_redirect:
             raise ValueError("Redirects are not allowed for security reasons (SSRF bypass risk).")
         response.raise_for_status()  # Raise an exception for bad status codes
