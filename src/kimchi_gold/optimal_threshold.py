@@ -22,6 +22,11 @@ def run_optimization(data, initial_investment=1000000, start_date=None,
     Returns:
         DataFrame with optimization results
     """
+    if initial_investment <= 0:
+        raise ValueError("initial_investment must be greater than 0")
+    if threshold_step <= 0:
+        raise ValueError("threshold_step must be greater than 0 to prevent Algorithmic Complexity DoS vulnerabilities.")
+
     results = []
     
     # Generate threshold values to test

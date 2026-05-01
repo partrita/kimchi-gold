@@ -47,6 +47,11 @@
 **Vulnerability:** URL validation only checked if the hostname `endswith(".naver.com")`, but did not strictly validate the characters composing the hostname itself. This lack of character validation opened the door to advanced SSRF bypasses such as IDNA homograph attacks (e.g., using `naver。com` where `。` normalizes to `.`), zero bytes, newline injections, or other parsing discrepancies between `urlparse` and the underlying HTTP client.
 **Learning:** Only validating the suffix of a hostname is insufficient against advanced bypass techniques. Different libraries may normalize or parse unusual characters in hostnames differently, leading to cases where a validation check passes but the actual request is routed to an attacker-controlled or unintended destination.
 **Prevention:** In addition to validating the domain suffix, enforce a strict allowlist of permitted characters for the `hostname` (e.g., `^[a-zA-Z0-9.-]+$`) using regex before performing further validation. This prevents malicious characters from exploiting parsing discrepancies.
+
+## 2026-04-30 - [Security Enhancement] Prevent Algorithmic Complexity DoS in Number Sequences
+**Vulnerability:** Numerical thresholds such as step sizes and bounds (`threshold_step`) in loops or generator functions like `numpy.arange` were passed directly without being validated, making them vulnerable to `ZeroDivisionError` (if step=0) or an Algorithmic Complexity DoS condition by creating immense iterations (if step is an extremely small fraction).
+**Learning:** Functions orchestrating loops, ranges, and array generation should not blindly trust input variables passed to them without validation, especially if those variables could be user-controlled CLI parameters.
+**Prevention:** Strictly enforce mathematical bounds (`> 0`) on parameter types like step increments and array dimensions, immediately rejecting negative or zero values.
 ## 2025-04-29 - [Missing CLI Parameter Validation]
 **Vulnerability:** Unbounded CLI parameters and potential for ZeroDivisionError in `optimal_threshold.py` and `backtest.py` via an initial investment <= 0 or extreme float ranges.
 **Learning:** External parameters, like CLI arguments, can be crafted to consume excessive memory or divide-by-zero, leading to application crashes.
