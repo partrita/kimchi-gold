@@ -33,7 +33,7 @@ def test_get_price_from_naver_success():
         price = price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert price == float(MOCK_DOMESTIC_PRICE_TEXT.replace(",", ""))
         mock_get.assert_called_once_with(
-            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10, allow_redirects=False, stream=True
+            url, headers=price_fetcher.REQUEST_HEADERS, timeout=(3.0, 10.0), allow_redirects=False, stream=True
         )
         mock_bs.assert_called_once_with(content, "html.parser")
         # class_ 파라미터가 람다 함수이므로 호출 여부만 확인
@@ -68,7 +68,7 @@ def test_get_price_from_naver_no_price_tag():
             price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert str(excinfo.value) == error_msg
         mock_get.assert_called_once_with(
-            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10, allow_redirects=False, stream=True
+            url, headers=price_fetcher.REQUEST_HEADERS, timeout=(3.0, 10.0), allow_redirects=False, stream=True
         )
         mock_bs.assert_called_once_with(content, "html.parser")
         # class_ 파라미터가 람다 함수이므로 호출 여부만 확인
@@ -103,7 +103,7 @@ def test_get_price_from_naver_no_price_in_text():
             price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert str(excinfo.value) == error_msg
         mock_get.assert_called_once_with(
-            url, headers=price_fetcher.REQUEST_HEADERS, timeout=10, allow_redirects=False, stream=True
+            url, headers=price_fetcher.REQUEST_HEADERS, timeout=(3.0, 10.0), allow_redirects=False, stream=True
         )
         mock_bs.assert_called_once_with(content, "html.parser")
         # class_ 파라미터가 람다 함수이므로 호출 여부만 확인
