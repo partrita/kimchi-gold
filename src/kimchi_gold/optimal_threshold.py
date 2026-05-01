@@ -195,8 +195,9 @@ def main():
         print("Error: Investment must be between 1 and 1,000,000,000.")
         sys.exit(1)
 
-    if args.step <= 0:
-        print("Error: Step size must be greater than 0.")
+    import math
+    if args.step <= 0 or not math.isfinite(args.step):
+        print("Error: Step size must be a finite number greater than 0.")
         sys.exit(1)
 
     if args.min_threshold > args.max_threshold:
