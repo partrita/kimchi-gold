@@ -191,8 +191,8 @@ def main():
         sys.exit(1)
     
     # Validation
-    if args.investment <= 0:
-        print("Error: Investment must be greater than 0.")
+    if args.investment <= 0 or args.investment > 1000000000:
+        print("Error: Investment must be between 1 and 1,000,000,000.")
         sys.exit(1)
 
     if args.step <= 0:
