@@ -227,6 +227,11 @@ def main():
         print("Error: Investment must be between 1 and 1,000,000,000.")
         sys.exit(1)
 
+    import math
+    if not math.isfinite(args.buy_threshold) or not math.isfinite(args.sell_threshold):
+        print("Error: Thresholds must be finite numbers.")
+        sys.exit(1)
+
     # Run backtest
     run_backtest(
         data,
