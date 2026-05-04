@@ -205,6 +205,10 @@ def main():
         print("Error: Step size must be a finite number greater than 0.")
         sys.exit(1)
 
+    if not math.isfinite(args.min_threshold) or not math.isfinite(args.max_threshold):
+        print("Error: Thresholds must be finite numbers.")
+        sys.exit(1)
+
     if args.min_threshold > args.max_threshold:
         print("Error: Minimum threshold cannot be greater than maximum threshold.")
         sys.exit(1)
