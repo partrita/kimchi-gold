@@ -61,3 +61,8 @@
 **Vulnerability:** External data fetching used a single integer timeout (`timeout=10`) in `requests.get()`. This single value applies to both the connection phase and the read phase. A malicious or uncooperative server could act as a tarpit, accepting the TCP connection but never responding, tying up client resources for the full duration or longer if not carefully managed.
 **Learning:** Using a single timeout value in `requests` can lead to resource exhaustion if many connections hang during the initial handshake. Best practice dictates separating connection and read timeouts.
 **Prevention:** Always use a tuple for the `timeout` parameter (e.g., `timeout=(3.0, 10.0)`) to ensure the application fails fast if a connection cannot be quickly established, thereby preventing Denial of Service (DoS) via resource exhaustion.
+
+## 2026-05-20 - [Security Enhancement] Enforce math.isfinite on Float CLI Parameters
+**Vulnerability:** Float CLI parameters (e.g., `min_threshold`, `max_threshold`, `buy_threshold`, `sell_threshold`) lacked `math.isfinite` validation. When passed non-finite values like `NaN` or `Inf`, the logic downstream produced erratic outcomes or application crashes (such as `ValueError: arange: cannot compute length` during sequence generation in `numpy`).
+**Learning:** Python's `float` type natively accepts `NaN` and `Inf`. When these values bypass initial validation and propagate to mathematical operations or sequence generators (like `numpy.arange`), they can lead to unhandled exceptions, logic errors, or DoS conditions.
+**Prevention:** Always validate user-provided float inputs using `math.isfinite()` to ensure they are concrete numeric values before executing dependent operations.
