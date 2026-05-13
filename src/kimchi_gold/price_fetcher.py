@@ -117,16 +117,15 @@ def extract_price_from_naver_finance(
         content_length = response.headers.get("Content-Length")
         if content_length:
             # Security Enhancement: Prevent algorithmic complexity DoS from int() parsing
+            length_int = None
             if len(content_length) <= 20:
                 try:
-                    length_int = int(content_length)
-                    if length_int < 0:
-                        length_int = None
+                    val = int(content_length)
+                    if val >= 0:
+                        length_int = val
                 except ValueError:
                     # Ignore malformed Content-Length and fall back to the stream size check
-                    length_int = None
-            else:
-                length_int = None
+                    pass
 
             if length_int is not None and length_int > max_size:
                 raise ValueError("Response size exceeds the maximum limit (5MB) based on Content-Length. Potential DoS risk.")
