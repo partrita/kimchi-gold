@@ -57,3 +57,8 @@ lidating the URL scheme (`https`) and domain is insufficient defense-in-depth, a
 **Vulnerability:** The application parsed the `Content-Length` HTTP header using Python's built-in `int()` function without placing any upper bound on the length of the string to parse.
 **Learning:** Calling `int()` on extremely long strings in Python can cause the interpreter to consume significant CPU and memory resources, leading to an Algorithmic Complexity Denial-of-Service (DoS) condition.
 **Prevention:** To prevent Algorithmic Complexity DoS from Python's `int()` parsing, enforce strict string length bounds (e.g., `<= 20` characters) before converting HTTP headers like `Content-Length` to integers. Negative sizes should also be rejected to prevent downstream bypasses.
+
+## 2026-05-24 - [Security Enhancement] Prevent Algorithmic Complexity DoS during Date Parsing
+**Vulnerability:** The application parsed the `start-date` CLI parameter using `datetime.strptime()` without placing any upper bound on the length of the string to parse.
+**Learning:** Calling `datetime.strptime()` on extremely long strings in Python can cause the interpreter to consume significant CPU and memory resources, leading to an Algorithmic Complexity Denial-of-Service (DoS) condition.
+**Prevention:** To prevent Algorithmic Complexity DoS from Python's string parsing in `datetime`, enforce strict string length bounds (e.g., `<= 20` characters) before converting parameters like `start-date` to datetime objects.
