@@ -175,6 +175,9 @@ def main():
     # Parse start date if provided
     start_date = None
     if args.start_date:
+        if len(args.start_date) > 20:
+            print("Error: Date string is too long.")
+            sys.exit(1)
         try:
             start_date = datetime.strptime(args.start_date, "%Y-%m-%d")
         except ValueError:
