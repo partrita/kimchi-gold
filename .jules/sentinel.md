@@ -62,3 +62,8 @@ lidating the URL scheme (`https`) and domain is insufficient defense-in-depth, a
 **Vulnerability:** The application parsed the `start-date` CLI parameter using `datetime.strptime()` without placing any upper bound on the length of the string to parse.
 **Learning:** Calling `datetime.strptime()` on extremely long strings in Python can cause the interpreter to consume significant CPU and memory resources, leading to an Algorithmic Complexity Denial-of-Service (DoS) condition.
 **Prevention:** To prevent Algorithmic Complexity DoS from Python's string parsing in `datetime`, enforce strict string length bounds (e.g., `<= 20` characters) before converting parameters like `start-date` to datetime objects.
+
+## 2026-05-24 - [Security Enhancement] Add Audit Logging for Security Events
+**Vulnerability:** The codebase implemented robust defenses against SSRF and DoS (validating URL schemes, preventing redirects, checking Content-Length and Content-Type) by silently raising ValueErrors. However, these mitigations lacked an audit trail, meaning that while attacks were stopped, they were not logged or flagged, preventing administrators from observing or reacting to active attacks or misconfigurations.
+**Learning:** A security mitigation that simply blocks an action without logging it is incomplete. "Silent" mitigations obscure attack patterns and hinder incident response, as there is no record of the thwarted attempt or its context.
+**Prevention:** Whenever a security control blocks an action or input (e.g., rejecting an SSRF attempt or stopping a DoS payload), explicitly log the event (e.g., using `logger.warning("[SECURITY] ...")`) before raising an exception or returning an error. This ensures security event observability.
