@@ -115,7 +115,7 @@ def extract_price_from_naver_finance(
         # Mitigate unintended payloads by checking Content-Type
         content_type = response.headers.get("Content-Type", "")
         if not content_type.lower().startswith("text/html"):
-            logger.warning(f"[SECURITY] Unexpected payload blocked: Invalid Content-Type '{content_type}' from {target_url}")
+            logger.warning("[SECURITY] Unexpected payload blocked: Invalid Content-Type %r from %r", content_type, target_url)
             raise ValueError(f"Invalid Content-Type: {content_type}. Only text/html is allowed.")
 
         # DoS Protection: Limit response size (e.g., 5MB) and time limit
