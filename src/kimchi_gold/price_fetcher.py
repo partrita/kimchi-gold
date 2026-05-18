@@ -78,36 +78,44 @@ def extract_price_from_naver_finance(
     # SSRF Protection: Validate URL scheme and domain
     parsed_url = urlparse(target_url)
     if parsed_url.scheme != "https":
+        logger.warning("[SECURITY] SSRF attempt blocked: Invalid URL scheme %r in %r", parsed_url.scheme, target_url)
         raise ValueError(f"Invalid URL scheme: {parsed_url.scheme}. Only HTTPS is allowed for security.")
 
     if "@" in parsed_url.netloc:
+        logger.warning(f"[SECURITY] SSRF attempt blocked: Userinfo '@' found in URL {target_url}")
         raise ValueError("URL must not contain userinfo (@)")
 
     if "\\" in parsed_url.netloc:
+        logger.warning(f"[SECURITY] SSRF attempt blocked: Backslash '\\' found in URL {target_url}")
         raise ValueError("URL must not contain backslashes (\\)")
 
     if parsed_url.port not in (None, 443):
+        logger.warning(f"[SECURITY] SSRF attempt blocked: Invalid port {parsed_url.port} in {target_url}")
         raise ValueError(f"Invalid port: {parsed_url.port}. Only standard HTTPS port (443) is allowed.")
 
     hostname = parsed_url.hostname or ""
 
     # Security Enhancement: Prevent IDNA/homograph attacks and parsing discrepancies
     if not re.fullmatch(r"[a-zA-Z0-9.-]+", hostname):
+        logger.warning(f"[SECURITY] SSRF attempt blocked: Invalid hostname characters '{hostname}' in {target_url}")
         raise ValueError(f"Invalid hostname characters: {hostname}")
 
     if not (hostname == "naver.com" or hostname.endswith(".naver.com")):
+        logger.warning(f"[SECURITY] SSRF attempt blocked: Invalid domain '{hostname}' in {target_url}")
         raise ValueError(f"Invalid domain: {hostname}. Only naver.com and its subdomains are allowed.")
 
     # Security Enhancement: Separate connect and read timeouts (3.0s connect, 10.0s read)
     # to prevent resource exhaustion from hanging connections (tarpits).
     with requests.get(target_url, headers=REQUEST_HEADERS, timeout=(3.0, 10.0), allow_redirects=False, stream=True) as response:
         if response.is_redirect:
+            logger.warning(f"[SECURITY] SSRF attempt blocked: Unexpected redirect encountered for {target_url}")
             raise ValueError("Redirects are not allowed for security reasons (SSRF bypass risk).")
         response.raise_for_status()  # Raise an exception for bad status codes
 
         # Mitigate unintended payloads by checking Content-Type
         content_type = response.headers.get("Content-Type", "")
         if not content_type.lower().startswith("text/html"):
+            logger.warning("[SECURITY] Unexpected payload blocked: Invalid Content-Type %r from %r", content_type, target_url)
             raise ValueError(f"Invalid Content-Type: {content_type}. Only text/html is allowed.")
 
         # DoS Protection: Limit response size (e.g., 5MB) and time limit
@@ -128,6 +136,7 @@ def extract_price_from_naver_finance(
                     pass
 
             if length_int is not None and length_int > max_size:
+                logger.warning(f"[SECURITY] DoS mitigation: Payload exceeds maximum size limit ({max_size} bytes) from {target_url} based on Content-Length ({length_int}).")
                 raise ValueError("Response size exceeds the maximum limit (5MB) based on Content-Length. Potential DoS risk.")
 
         chunks = []
@@ -138,11 +147,13 @@ def extract_price_from_naver_finance(
         for chunk in response.iter_content(chunk_size=8192):
             # Slow-read DoS mitigation
             if time.monotonic() - start_time > timeout_seconds:
+                logger.warning(f"[SECURITY] DoS mitigation: Slow read detected and timed out while fetching {target_url}.")
                 raise ValueError("Response reading timed out (Slowloris mitigation).")
 
             chunks.append(chunk)
             current_size += len(chunk)
             if current_size > max_size:
+                logger.warning(f"[SECURITY] DoS mitigation: Response stream exceeds maximum size limit ({max_size} bytes) from {target_url}.")
                 raise ValueError("Response size exceeds the maximum limit (5MB). Potential DoS risk.")
         content = b"".join(chunks)
 
