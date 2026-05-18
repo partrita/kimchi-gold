@@ -78,7 +78,7 @@ def extract_price_from_naver_finance(
     # SSRF Protection: Validate URL scheme and domain
     parsed_url = urlparse(target_url)
     if parsed_url.scheme != "https":
-        logger.warning(f"[SECURITY] SSRF attempt blocked: Invalid URL scheme '{parsed_url.scheme}' in {target_url}")
+        logger.warning("[SECURITY] SSRF attempt blocked: Invalid URL scheme %r in %r", parsed_url.scheme, target_url)
         raise ValueError(f"Invalid URL scheme: {parsed_url.scheme}. Only HTTPS is allowed for security.")
 
     if "@" in parsed_url.netloc:
