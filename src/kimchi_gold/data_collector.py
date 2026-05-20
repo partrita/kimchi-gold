@@ -93,7 +93,7 @@ def save_gold_price_data_to_csv(
         logger.error(
             f"Failed to write data to {output_csv_file_path}: {file_write_error}"
         )
-        raise IOError(f"파일 쓰기 실패: {file_write_error}")
+        raise IOError("파일 쓰기 실패: 시스템 로그를 확인해주세요.")
 
 
 def collect_and_save_current_gold_market_data(
@@ -193,7 +193,8 @@ def main():
             print("금 가격 데이터 수집에 실패했습니다.")
             return 1
     except Exception as main_execution_error:
-        print(f"예기치 못한 오류 발생: {main_execution_error}")
+        logger.exception(f"예기치 못한 오류 발생: {main_execution_error}")
+        print("예기치 못한 오류 발생: 시스템 로그를 확인해주세요.")
         return 1
 
 
