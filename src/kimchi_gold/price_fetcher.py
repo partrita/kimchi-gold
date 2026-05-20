@@ -340,7 +340,7 @@ def main():
         print_formatted_gold_price(current_gold_data)
 
     except Exception as main_error:
-        logger.error(f"오류 발생: {main_error}")
+        logger.exception(f"오류 발생: {main_error}")
         print("오류 발생: 시스템 로그를 확인해주세요.")
         return 1
 
