@@ -286,7 +286,7 @@ def fetch_current_gold_market_data() -> GoldPriceData:
 
     except Exception as collection_error:
         logger.error(f"금 가격 데이터 수집 실패: {collection_error}")
-        raise ValueError(f"금 가격 데이터를 가져올 수 없습니다: {collection_error}")
+        raise ValueError("금 가격 데이터를 가져올 수 없습니다. 시스템 로그를 확인해주세요.")
 
 
 # 하위 호환성을 위한 레거시 함수들
@@ -340,7 +340,8 @@ def main():
         print_formatted_gold_price(current_gold_data)
 
     except Exception as main_error:
-        print(f"오류 발생: {main_error}")
+        logger.exception(f"오류 발생: {main_error}")
+        print("오류 발생: 시스템 로그를 확인해주세요.")
         return 1
 
     return 0
