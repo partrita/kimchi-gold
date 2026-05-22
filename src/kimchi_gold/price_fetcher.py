@@ -106,7 +106,14 @@ def extract_price_from_naver_finance(
 
     # Security Enhancement: Separate connect and read timeouts (3.0s connect, 10.0s read)
     # to prevent resource exhaustion from hanging connections (tarpits).
-    with requests.get(target_url, headers=REQUEST_HEADERS, timeout=(3.0, 10.0), allow_redirects=False, stream=True) as response:
+    with requests.get(
+        target_url,
+        headers=REQUEST_HEADERS,
+        timeout=(3.0, 10.0),
+        allow_redirects=False,
+        stream=True,
+        verify=True,
+    ) as response:
         if response.is_redirect:
             logger.warning(f"[SECURITY] SSRF attempt blocked: Unexpected redirect encountered for {target_url}")
             raise ValueError("Redirects are not allowed for security reasons (SSRF bypass risk).")
