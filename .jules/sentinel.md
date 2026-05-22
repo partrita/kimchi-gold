@@ -71,3 +71,7 @@ lidating the URL scheme (`https`) and domain is insufficient defense-in-depth, a
 **Vulnerability:** Raw exception messages (e.g., `collection_error`, `file_write_error`) were appended to user-facing `ValueError`, `IOError`, and `print()` statements in `price_fetcher.py` and `data_collector.py`.
 **Learning:** Exposing raw exceptions can inadvertently leak sensitive system information, such as file paths, internal logic states, or network configurations, aiding attackers in reconnaissance.
 **Prevention:** To prevent information leakage, securely log the raw exception details internally using a logging framework (`logger.error`), but raise or return generic, user-safe error messages (e.g., "시스템 로그를 확인해주세요.") to the end user.
+## 2026-05-21 - Explicitly Enforce TLS Verification
+**Vulnerability:** MitM vulnerability via disabled TLS verification
+**Learning:** Relying on default library parameters for critical security mechanisms leaves the application vulnerable if defaults are overridden (e.g., globally via env vars) or accidentally changed.
+**Prevention:** Explicitly specify security-critical parameters like `verify=True` in `requests` calls to ensure secure defaults are enforced.
