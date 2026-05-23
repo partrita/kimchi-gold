@@ -53,6 +53,7 @@ if __name__ == "__main__":
             f"{DEFAULT_CHART_DISPLAY_MONTHS}개월 그래프가 "
             f"성공적으로 {output_chart_image_file}에 저장되었습니다"
         )
-    except Exception as chart_generation_error:
-        print(f"시각화 실패: {chart_generation_error}")
+    except Exception:
+        # Logging is not configured in this script, just print generic error
+        print("시각화 실패: 시스템 로그를 확인해주세요.")
         sys.exit(1)
