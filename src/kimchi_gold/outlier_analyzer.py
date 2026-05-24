@@ -257,8 +257,9 @@ def main():
 
         return 0
 
-    except Exception as main_execution_error:
-        print(f"예기치 못한 오류: {main_execution_error}")
+    except Exception:
+        logger.exception("예기치 못한 오류 발생")
+        print("예기치 못한 오류: 시스템 로그를 확인해주세요.")
         return 1
 
 

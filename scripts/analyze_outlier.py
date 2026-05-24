@@ -50,7 +50,7 @@ if __name__ == "__main__":
             logger.info("정상 범위")
             
         logger.info(f"분석 완료: 이상치 여부 = {is_outlier_detected}")
-    except Exception as error:
-        logger.error(f"이상치 분석 실패: {error}")
-        print(f"분석 실패: {error}")
+    except Exception:
+        logger.exception("이상치 분석 실패")
+        print("분석 실패: 시스템 로그를 확인해주세요.")
         sys.exit(1)
