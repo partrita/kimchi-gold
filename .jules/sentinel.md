@@ -75,3 +75,8 @@ lidating the URL scheme (`https`) and domain is insufficient defense-in-depth, a
 **Vulnerability:** MitM vulnerability via disabled TLS verification
 **Learning:** Relying on default library parameters for critical security mechanisms leaves the application vulnerable if defaults are overridden (e.g., globally via env vars) or accidentally changed.
 **Prevention:** Explicitly specify security-critical parameters like `verify=True` in `requests` calls to ensure secure defaults are enforced.
+
+## 2026-05-24 - [Security Enhancement] Prevent Information Leakage in CLI Tools
+**Vulnerability:** The CLI tools (`backtest.py`, `optimal_threshold.py`, `chart_generator.py`) printed raw exception details and absolute internal server paths (e.g., `Path.cwd()`) directly to standard output upon failure.
+**Learning:** Directly printing unhandled exceptions or internal system states to the console in CLI tools or scripts exposes sensitive implementation details (CWE-209), which could be useful to an attacker if the CLI tool's output is inadvertently logged or returned to an unauthorized user in an automated environment (like CI/CD or a wrapper API).
+**Prevention:** In CLI scripts, route detailed errors and context (such as file paths and exception stacks) to the internal logging framework using `logger.exception()` or `logger.error()`, and output only generic, safe error messages (e.g., "Error: 시스템 로그를 확인해주세요.") to the user-facing console.
