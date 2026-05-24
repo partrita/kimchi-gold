@@ -3,6 +3,10 @@ import argparse
 from datetime import datetime
 import sys
 from pathlib import Path
+import logging
+
+# 로깅 설정
+logger = logging.getLogger(__name__)
 
 
 def run_backtest(data, initial_investment=1000000, start_date=None, buy_threshold=-3.0, sell_threshold=3.0):
@@ -216,14 +220,16 @@ def main():
     data_file = Path.cwd() / "data" / "kimchi_gold_price_log.csv"
 
     if not data_file.exists():
-        print(f"Error: Data file not found at {data_file}")
-        print(f"Current working directory: {Path.cwd()}")
+        logger.error(f"Error: Data file not found at {data_file}")
+        logger.error(f"Current working directory: {Path.cwd()}")
+        print("Error: 시스템 로그를 확인해주세요.")
         sys.exit(1)
 
     try:
         data = load_data(data_file)
     except Exception as e:
-        print(f"Error loading data: {e}")
+        logger.exception(f"Error loading data: {e}")
+        print("Error: 시스템 로그를 확인해주세요.")
         sys.exit(1)
 
     if args.investment <= 0 or args.investment > 1000000000:
