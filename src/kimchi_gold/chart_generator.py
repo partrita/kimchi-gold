@@ -12,11 +12,15 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+import logging
 from .configuration import (
     DATA_STORAGE_DIRECTORY,
     DEFAULT_CHART_DISPLAY_MONTHS,
     CHART_OUTPUT_FILE_NAME,
 )
+
+# 로깅 설정
+logger = logging.getLogger(__name__)
 
 # Increase recursion limit to handle matplotlib's deepcopy issues
 sys.setrecursionlimit(5000)
@@ -185,10 +189,12 @@ def create_comprehensive_gold_price_charts():
             display_period_months,
         )
     except FileNotFoundError as file_error:
-        print(file_error)
+        logger.exception(f"File not found error: {file_error}")
+        print("시각화 실패: 시스템 로그를 확인해주세요.")
         return
     except ValueError as data_error:
-        print(data_error)
+        logger.exception(f"Value error: {data_error}")
+        print("시각화 실패: 시스템 로그를 확인해주세요.")
         return
 
     plt.style.use("seaborn-v0_8-whitegrid")
