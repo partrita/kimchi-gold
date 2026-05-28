@@ -85,7 +85,8 @@ def run_optimization(data, initial_investment=1000000, start_date=None,
                 print("데이터 없음")
                 
         except Exception as e:
-            print(f"오류: {str(e)}")
+            logger.exception(f"Optimization error at threshold {threshold}: {e}")
+            print("오류: 시스템 로그를 확인해주세요.")
     
     return pd.DataFrame(results)
 
