@@ -49,9 +49,10 @@ if __name__ == "__main__":
         chart_gen.create_comprehensive_gold_price_charts()
         
         output_chart_image_file = data_dir / CHART_OUTPUT_FILE_NAME
+        # The logging is done internally in chart_generator.py, so we just print the safe relative filename here
         print(
             f"{DEFAULT_CHART_DISPLAY_MONTHS}개월 그래프가 "
-            f"성공적으로 {output_chart_image_file}에 저장되었습니다"
+            f"성공적으로 {CHART_OUTPUT_FILE_NAME}에 저장되었습니다"
         )
     except Exception:
         # Logging is not configured in this script, just print generic error
