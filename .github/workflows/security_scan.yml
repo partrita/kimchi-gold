@@ -32,4 +32,4 @@ jobs:
         run: uvx bandit -r src/
 
       - name: Run pip-audit (Dependency Scanning)
-        run: uv pip compile pyproject.toml | uvx pip-audit -r /dev/stdin
+        run: uv pip compile pyproject.toml --all-extras | uvx pip-audit -r /dev/stdin
