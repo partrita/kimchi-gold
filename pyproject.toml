@@ -21,3 +21,6 @@ optimal_threshold = "kimchi_gold.optimal_threshold:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.ruff.lint]
+extend-ignore = ['E402']
