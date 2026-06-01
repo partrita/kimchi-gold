@@ -33,6 +33,7 @@ lidating the URL scheme (`https`) and domain is insufficient defense-in-depth, a
 **Vulnerability:** Numerical thresholds such as step sizes and bounds (`threshold_step`) in loops or generator functions like `numpy.arange` were passed directly without being validated, making them vulnerable to `ZeroDivisionError` (if step=0) or an Algorithmic Complexity DoS condition by creating immense iterations (if step is an extremely small fraction).
 **Learning:** Functions orchestrating loops, ranges, and array generation should not blindly trust input variables passed to them without validation, especially if those variables could be user-controlled CLI parameters.
 **Prevention:** Strictly enforce mathematical bounds (`> 0`) on parameter types like step increments and array dimensions, immediately rejecting negative or zero values.
+
 ## 2025-04-29 - [Missing CLI Parameter Validation]
 **Vulnerability:** Unbounded CLI parameters and potential for ZeroDivisionError in `optimal_threshold.py` and `backtest.py` via an initial investment <= 0 or extreme float ranges.
 **Learning:** External parameters, like CLI arguments, can be crafted to consume excessive memory or divide-by-zero, leading to application crashes.
@@ -67,10 +68,12 @@ lidating the URL scheme (`https`) and domain is insufficient defense-in-depth, a
 **Vulnerability:** The codebase implemented robust defenses against SSRF and DoS (validating URL schemes, preventing redirects, checking Content-Length and Content-Type) by silently raising ValueErrors. However, these mitigations lacked an audit trail, meaning that while attacks were stopped, they were not logged or flagged, preventing administrators from observing or reacting to active attacks or misconfigurations.
 **Learning:** A security mitigation that simply blocks an action without logging it is incomplete. "Silent" mitigations obscure attack patterns and hinder incident response, as there is no record of the thwarted attempt or its context.
 **Prevention:** Whenever a security control blocks an action or input (e.g., rejecting an SSRF attempt or stopping a DoS payload), explicitly log the event (e.g., using `logger.warning("[SECURITY] ...")`) before raising an exception or returning an error. This ensures security event observability.
+
 ## 2025-05-20 - Prevent Information Leakage in Error Responses
 **Vulnerability:** Raw exception messages (e.g., `collection_error`, `file_write_error`) were appended to user-facing `ValueError`, `IOError`, and `print()` statements in `price_fetcher.py` and `data_collector.py`.
 **Learning:** Exposing raw exceptions can inadvertently leak sensitive system information, such as file paths, internal logic states, or network configurations, aiding attackers in reconnaissance.
 **Prevention:** To prevent information leakage, securely log the raw exception details internally using a logging framework (`logger.error`), but raise or return generic, user-safe error messages (e.g., "시스템 로그를 확인해주세요.") to the end user.
+
 ## 2026-05-21 - Explicitly Enforce TLS Verification
 **Vulnerability:** MitM vulnerability via disabled TLS verification
 **Learning:** Relying on default library parameters for critical security mechanisms leaves the application vulnerable if defaults are overridden (e.g., globally via env vars) or accidentally changed.
@@ -80,6 +83,12 @@ lidating the URL scheme (`https`) and domain is insufficient defense-in-depth, a
 **Vulnerability:** The CLI tools (`backtest.py`, `optimal_threshold.py`, `chart_generator.py`) printed raw exception details and absolute internal server paths (e.g., `Path.cwd()`) directly to standard output upon failure.
 **Learning:** Directly printing unhandled exceptions or internal system states to the console in CLI tools or scripts exposes sensitive implementation details (CWE-209), which could be useful to an attacker if the CLI tool's output is inadvertently logged or returned to an unauthorized user in an automated environment (like CI/CD or a wrapper API).
 **Prevention:** In CLI scripts, route detailed errors and context (such as file paths and exception stacks) to the internal logging framework using `logger.exception()` or `logger.error()`, and output only generic, safe error messages (e.g., "Error: 시스템 로그를 확인해주세요.") to the user-facing console.
+
+## 2026-05-31 - [Security Enhancement] Secure CI/CD Dependency Installation
+**Vulnerability:** The `.github/workflows/publish-website.yml` workflow installed Python dependencies (`pandas`, `plotly`, `jupyter`, `pyyaml`) dynamically via `pip install` without version pinning or vulnerability scanning, making the workflow susceptible to supply chain attacks (e.g., dependency confusion or malicious updates).
+**Learning:** Dependencies installed on the fly in CI/CD pipelines without being tracked in the main dependency manifest (`pyproject.toml`) bypass automated security checks (like `pip-audit`) and lack reproducibility.
+**Prevention:** To prevent supply chain attacks in CI/CD, all dependencies (including those used for auxiliary tasks like building documentation or websites) must be explicitly declared in the project's dependency manifest (e.g., as an optional dependency group). Update CI scripts to install from this defined group (e.g., `pip install .[website]`) and ensure security scanners (e.g., `pip-audit`) are configured to scan all extras (`--all-extras`).
+
 ## 2026-05-30 - [Security Enhancement] Prevent Information Leakage in CLI Tools
 **Vulnerability:** The chart generator CLI script and library printed the absolute internal file paths of the generated charts directly to standard output upon success.
 **Learning:** Directly printing absolute file paths to the console in CLI tools or scripts exposes internal system details (CWE-209), which could be useful to an attacker for reconnaissance.

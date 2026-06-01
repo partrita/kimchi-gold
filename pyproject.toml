@@ -18,6 +18,14 @@ check = "kimchi_gold.price_fetcher:main"
 backtest = "kimchi_gold.backtest:main"
 optimal_threshold = "kimchi_gold.optimal_threshold:main"
 
+[project.optional-dependencies]
+website = [
+    "pandas",
+    "plotly",
+    "jupyter",
+    "pyyaml",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
