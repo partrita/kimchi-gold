@@ -94,7 +94,7 @@ lidating the URL scheme (`https`) and domain is insufficient defense-in-depth, a
 **Learning:** Directly printing absolute file paths to the console in CLI tools or scripts exposes internal system details (CWE-209), which could be useful to an attacker for reconnaissance.
 **Prevention:** Output only generic or relative filenames (e.g. `kimchi_gold_price_recent_12months.png`) to the user-facing console, while routing detailed internal context (like absolute file paths) to the logging framework using `logger.info()` for auditing purposes.
 
-## $(date +%Y-%m-%d) - [Add Workflow Timeouts]
+## YYYY-MM-DD - [Add Workflow Timeouts]
 **Vulnerability:** Missing timeout configurations in GitHub Actions workflows.
 **Learning:** Without explicit timeouts, compromised dependencies or malicious PRs can intentionally hang CI runners (e.g., infinite loops or cryptomining tarpits), exhausting the repository's GitHub Actions compute quota and causing a Denial of Service (DoS) for the CI/CD pipeline.
 **Prevention:** Always define a job-level `timeout-minutes` configuration (e.g., `timeout-minutes: 10`) in all GitHub Actions workflows to enforce strict execution time limits.
