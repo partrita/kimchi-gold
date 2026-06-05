@@ -24,6 +24,8 @@ def run_backtest(data, initial_investment=1000000, start_date=None, buy_threshol
     """
     if initial_investment <= 0:
         raise ValueError("initial_investment must be greater than 0")
+    if not math.isfinite(buy_threshold) or not math.isfinite(sell_threshold):
+        raise ValueError("buy_threshold and sell_threshold must be finite numbers")
 
     # 백테스팅 매개변수
     commission_rate = 0.0016  # 0.16%
