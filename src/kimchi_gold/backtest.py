@@ -22,7 +22,6 @@ def run_backtest(data, initial_investment=1000000, start_date=None, buy_threshol
     Returns:
         The DataFrame with backtest results
     """
-    import math
     if initial_investment <= 0:
         raise ValueError("initial_investment must be greater than 0")
     if not math.isfinite(buy_threshold) or not math.isfinite(sell_threshold):
