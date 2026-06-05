@@ -4,6 +4,7 @@ from datetime import datetime
 import sys
 from pathlib import Path
 import logging
+import math
 
 # 로깅 설정
 logger = logging.getLogger(__name__)
