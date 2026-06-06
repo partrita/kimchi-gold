@@ -79,6 +79,6 @@ if __name__ == "__main__":
             logger.info("오늘 날짜의 데이터가 이미 존재합니다.")
             print("오늘 날짜의 데이터가 이미 존재합니다.")
     except Exception:
-        logger.exception("데이터 수집 실패")
+        logger.error("데이터 수집 실패")
         print("데이터 수집 실패: 시스템 로그를 확인해주세요.")
         sys.exit(1)
