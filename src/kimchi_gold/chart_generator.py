@@ -189,11 +189,11 @@ def create_comprehensive_gold_price_charts():
             display_period_months,
         )
     except FileNotFoundError as file_error:
-        logger.exception(f"File not found error: {file_error}")
+        logger.error(f"File not found error: {file_error}")
         print("시각화 실패: 시스템 로그를 확인해주세요.")
         return
     except ValueError as data_error:
-        logger.exception(f"Value error: {data_error}")
+        logger.error(f"Value error: {data_error}")
         print("시각화 실패: 시스템 로그를 확인해주세요.")
         return
 

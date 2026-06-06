@@ -4,6 +4,7 @@ from datetime import datetime
 import sys
 from pathlib import Path
 import logging
+import math
 
 # 로깅 설정
 logger = logging.getLogger(__name__)
@@ -230,7 +231,7 @@ def main():
     try:
         data = load_data(data_file)
     except Exception as e:
-        logger.exception(f"Error loading data: {e}")
+        logger.error(f"Error loading data: {e}")
         print("Error: 시스템 로그를 확인해주세요.")
         sys.exit(1)
 
