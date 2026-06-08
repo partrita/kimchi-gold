@@ -51,6 +51,6 @@ if __name__ == "__main__":
             
         logger.info(f"분석 완료: 이상치 여부 = {is_outlier_detected}")
     except Exception:
-        logger.exception("이상치 분석 실패")
+        logger.error("이상치 분석 실패")
         print("분석 실패: 시스템 로그를 확인해주세요.")
         sys.exit(1)

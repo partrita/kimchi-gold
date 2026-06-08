@@ -98,6 +98,12 @@ lidating the URL scheme (`https`) and domain is insufficient defense-in-depth, a
 **Vulnerability:** Missing timeout configurations in GitHub Actions workflows.
 **Learning:** Without explicit timeouts, compromised dependencies or malicious PRs can intentionally hang CI runners (e.g., infinite loops or cryptomining tarpits), exhausting the repository's GitHub Actions compute quota and causing a Denial of Service (DoS) for the CI/CD pipeline.
 **Prevention:** Always define a job-level `timeout-minutes` configuration (e.g., `timeout-minutes: 10`) in all GitHub Actions workflows to enforce strict execution time limits.
+
+## 2026-06-06 - [Security Enhancement] Prevent Information Leakage in Logs
+**Vulnerability:** The application used `logger.exception()` extensively across scripts and core modules (`price_fetcher.py`, `backtest.py`, `outlier_analyzer.py`, etc.). `logger.exception()` automatically appends the full stack trace to the log message. Since the application runs in a CI/CD environment (e.g., GitHub Actions), this behavior can inadvertently expose sensitive internal paths, file structures, and library versions into publicly accessible logs, leading to an Information Leakage vulnerability (CWE-209).
+**Learning:** Exposing stack traces in production or CI/CD logs provides attackers with valuable reconnaissance information. Internal implementation details should be kept secure. While detailed error information is useful for local debugging, it should be sanitized in centralized or CI/CD logs unless tightly controlled.
+**Prevention:** Replace `logger.exception()` with `logger.error()` to log the exception message and relevant contextual data without automatically appending the full stack trace.
+
 ## 2026-06-05 - [Security] Prevent Algorithmic Complexity DoS and numpy crash by validating float parameters
 **Vulnerability:** The `run_optimization` function in `src/kimchi_gold/optimal_threshold.py` accepted threshold parameters (min, max, step) as floats but did not validate if they were finite before passing them to `np.arange`. An attacker or programmatic caller supplying `NaN` or `Infinity` could cause a `ValueError` crash (Algorithmic Complexity DoS).
 **Learning:** While CLI arguments were validated using `math.isfinite()` in `main()`, the inner API function `run_optimization()` lacked the same validation, leaving programmatic invocations vulnerable to DoS. Additionally, the `backtest.py` file had a missing `import math` which caused a `NameError` crash.
