@@ -193,7 +193,7 @@ def main():
             print("금 가격 데이터 수집에 실패했습니다.")
             return 1
     except Exception as main_execution_error:
-        logger.exception(f"예기치 못한 오류 발생: {main_execution_error}")
+        logger.error(f"예기치 못한 오류 발생: {main_execution_error}")
         print("예기치 못한 오류 발생: 시스템 로그를 확인해주세요.")
         return 1
 
