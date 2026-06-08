@@ -178,6 +178,7 @@ def extract_price_from_naver_finance(
             matched_string = price_match.group().replace(",", "")
             # Security Enhancement: Prevent algorithmic complexity DoS by limiting string length before float()
             if len(matched_string) > 50:
+                logger.warning(f"[SECURITY] DoS mitigation: Extracted price string exceeds length limit ({len(matched_string)} > 50) from {target_url}.")
                 raise ValueError("추출된 가격 문자열이 너무 깁니다. (DoS 방지)")
             extracted_price = float(matched_string)
             return validate_price(extracted_price, error_message.split(" ")[0])
