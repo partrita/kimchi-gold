@@ -39,7 +39,7 @@ def validate_price(price: float, name: str) -> float:
     Raises:
         ValueError: 가격이 0 이하이거나 비정상적인 값인 경우
     """
-    if math.isnan(price) or math.isinf(price):
+    if not math.isfinite(price):
         logger.error(f"비정상적인 가격(NaN/Inf) 감지 ({name}): {price}")
         raise ValueError(f"유효하지 않은 {name} 값입니다. (NaN/Inf)")
 
