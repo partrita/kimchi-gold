@@ -6,6 +6,7 @@ from pathlib import Path
 from .backtest import run_backtest, load_data
 import numpy as np
 import logging
+import math
 
 # 로깅 설정
 logger = logging.getLogger(__name__)
@@ -30,6 +31,8 @@ def run_optimization(data, initial_investment=1000000, start_date=None,
         raise ValueError("initial_investment must be greater than 0")
     if threshold_step <= 0:
         raise ValueError("threshold_step must be greater than 0 to prevent Algorithmic Complexity DoS vulnerabilities.")
+    if not (math.isfinite(threshold_min) and math.isfinite(threshold_max) and math.isfinite(threshold_step)):
+        raise ValueError("Threshold parameters must be finite numbers")
 
     results = []
     
