@@ -267,3 +267,31 @@ def test_extract_price_slow_read_dos_timeout():
         with pytest.raises(ValueError) as excinfo:
             price_fetcher.extract_price_from_naver_finance(url, error_msg)
         assert "Response reading timed out (Slowloris mitigation)." in str(excinfo.value)
+
+
+def test_extract_price_algorithmic_complexity_dos_mitigation():
+    url = "https://finance.naver.com"
+    error_msg = "테스트 에러 메시지"
+
+    # 51자리 길이의 숫자 문자열 생성
+    long_price_string = "1" * 51
+
+    with (
+        patch("requests.get") as mock_get,
+        patch("kimchi_gold.price_fetcher.BeautifulSoup") as mock_bs,
+    ):
+        mock_get.return_value.__enter__.return_value.is_redirect = False
+        mock_get.return_value.__enter__.return_value.headers = {"Content-Type": "text/html"}
+
+        # HTML 내용 모의
+        content = f"<html><body><strong class='DetailInfo_price__I_VJn'>{long_price_string}</strong></body></html>".encode("utf-8")
+        mock_get.return_value.__enter__.return_value.iter_content.return_value = [content]
+
+        # BeautifulSoup 모의 설정
+        mock_soup_instance = mock_bs.return_value
+        mock_soup_instance.find.return_value.get_text.return_value = long_price_string
+
+        with pytest.raises(ValueError) as excinfo:
+            price_fetcher.extract_price_from_naver_finance(url, error_msg)
+
+        assert "추출된 가격 문자열이 너무 깁니다. (DoS 방지)" in str(excinfo.value)
