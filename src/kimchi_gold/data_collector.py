@@ -8,12 +8,47 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
-from .configuration import GOLD_PRICE_DATA_CSV_FILE, CSV_COLUMN_HEADERS
+from .configuration import (
+    GOLD_PRICE_DATA_CSV_FILE,
+    CSV_COLUMN_HEADERS,
+    DATA_STORAGE_DIRECTORY,
+)
 from .data_models import GoldPriceData
 from .price_fetcher import fetch_current_gold_market_data
 
 # 로깅 설정
 logger = logging.getLogger(__name__)
+
+
+def validate_safe_path(
+    file_path: Path, base_dir: Path = DATA_STORAGE_DIRECTORY
+) -> Path:
+    """
+    Security Enhancement: 파일 경로가 허용된 기본 디렉토리 내에 있는지 검증하여
+    Path Traversal 취약점을 방지합니다 (Defense in Depth).
+
+    Args:
+        file_path: 검증할 파일 경로
+        base_dir: 허용된 기본 디렉토리 경로
+
+    Returns:
+        검증된 절대 경로 (Path)
+
+    Raises:
+        ValueError: 파일 경로가 허용된 디렉토리를 벗어난 경우
+    """
+    try:
+        resolved_path = file_path.resolve()
+        resolved_base = base_dir.resolve()
+
+        # relative_to raises ValueError if resolved_path is not a subpath of resolved_base
+        resolved_path.relative_to(resolved_base)
+        return resolved_path
+    except Exception as e:
+        logger.warning(
+            f"[SECURITY] Path traversal attempt blocked or path error: {file_path} is outside {base_dir}. Error: {e}"
+        )
+        raise ValueError(f"Invalid file path: {file_path} is not permitted.")
 
 
 def check_if_date_already_logged(
@@ -30,8 +65,13 @@ def check_if_date_already_logged(
     Returns:
         날짜가 기록되어 있으면 True, 없으면 False
     """
-    if not csv_file_path.exists():
-        logger.debug(f"File {csv_file_path} does not exist")
+    try:
+        safe_csv_file_path = validate_safe_path(csv_file_path)
+    except ValueError:
+        return False
+
+    if not safe_csv_file_path.exists():
+        logger.debug(f"File {safe_csv_file_path} does not exist")
         return False
 
     if target_date_to_check is None:
@@ -40,7 +80,7 @@ def check_if_date_already_logged(
     target_date_string = target_date_to_check.strftime("%Y-%m-%d")
 
     try:
-        with csv_file_path.open("r", encoding="utf-8") as csv_file:
+        with safe_csv_file_path.open("r", encoding="utf-8") as csv_file:
             csv_reader = csv.reader(csv_file)
             next(csv_reader, None)  # 헤더 스킵
             for data_row in csv_reader:
@@ -68,11 +108,14 @@ def save_gold_price_data_to_csv(
 
     Raises:
         IOError: 파일 쓰기 실패 시
+        ValueError: 안전하지 않은 파일 경로인 경우
     """
-    try:
-        file_already_exists = output_csv_file_path.exists()
+    safe_output_csv_file_path = validate_safe_path(output_csv_file_path)
 
-        with output_csv_file_path.open(
+    try:
+        file_already_exists = safe_output_csv_file_path.exists()
+
+        with safe_output_csv_file_path.open(
             mode="a", encoding="utf-8", newline=""
         ) as csv_file:
             csv_writer = csv.writer(csv_file)
@@ -81,17 +124,17 @@ def save_gold_price_data_to_csv(
             if not file_already_exists:
                 csv_writer.writerow(CSV_COLUMN_HEADERS)
                 logger.debug(
-                    f"Created new CSV file with headers: {output_csv_file_path}"
+                    f"Created new CSV file with headers: {safe_output_csv_file_path}"
                 )
 
             # 데이터 행 작성
             data_row_for_csv = gold_price_data_object.convert_to_csv_row_format()
             csv_writer.writerow(data_row_for_csv)
-            logger.info(f"Data written to {output_csv_file_path}: {data_row_for_csv}")
+            logger.info(f"Data written to {safe_output_csv_file_path}: {data_row_for_csv}")
 
     except Exception as file_write_error:
         logger.error(
-            f"Failed to write data to {output_csv_file_path}: {file_write_error}"
+            f"Failed to write data to {safe_output_csv_file_path}: {file_write_error}"
         )
         raise IOError("파일 쓰기 실패: 시스템 로그를 확인해주세요.")
 
@@ -142,9 +185,10 @@ def write_to_csv(
     """
     레거시 호환성을 위한 함수 - 새로운 코드에서는 save_gold_price_data_to_csv() 사용 권장
     """
+    safe_csv_file_path = validate_safe_path(csv_file_path)
     try:
-        file_already_exists = csv_file_path.exists()
-        with csv_file_path.open(mode="a", encoding="utf-8", newline="") as csv_file:
+        file_already_exists = safe_csv_file_path.exists()
+        with safe_csv_file_path.open(mode="a", encoding="utf-8", newline="") as csv_file:
             csv_writer = csv.writer(csv_file)
             if not file_already_exists:
                 csv_writer.writerow(CSV_COLUMN_HEADERS)
