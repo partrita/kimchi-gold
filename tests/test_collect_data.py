@@ -29,12 +29,14 @@ MOCK_CSV_ROW = [
 ]
 
 
-def test_is_today_logged_new_file(tmp_path):
+@patch("kimchi_gold.data_collector.validate_safe_path", side_effect=lambda x: x)
+def test_is_today_logged_new_file(mock_validate, tmp_path):
     filepath = tmp_path / "test.csv"
     assert not is_today_logged(filepath)
 
 
-def test_is_today_logged_not_logged(tmp_path):
+@patch("kimchi_gold.data_collector.validate_safe_path", side_effect=lambda x: x)
+def test_is_today_logged_not_logged(mock_validate, tmp_path):
     filepath = tmp_path / "test.csv"
     with open(filepath, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
@@ -43,7 +45,8 @@ def test_is_today_logged_not_logged(tmp_path):
     assert not is_today_logged(filepath)
 
 
-def test_is_today_logged_logged(tmp_path):
+@patch("kimchi_gold.data_collector.validate_safe_path", side_effect=lambda x: x)
+def test_is_today_logged_logged(mock_validate, tmp_path):
     filepath = tmp_path / "test.csv"
     with open(filepath, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
@@ -52,7 +55,8 @@ def test_is_today_logged_logged(tmp_path):
     assert is_today_logged(filepath)
 
 
-def test_write_to_csv_new_file(tmp_path):
+@patch("kimchi_gold.data_collector.validate_safe_path", side_effect=lambda x: x)
+def test_write_to_csv_new_file(mock_validate, tmp_path):
     filepath = tmp_path / "new_test.csv"
     write_to_csv(MOCK_CSV_ROW, filepath)
     with open(filepath, "r", encoding="utf-8") as f:
@@ -63,7 +67,8 @@ def test_write_to_csv_new_file(tmp_path):
         assert data == MOCK_CSV_ROW
 
 
-def test_write_to_csv_existing_file(tmp_path):
+@patch("kimchi_gold.data_collector.validate_safe_path", side_effect=lambda x: x)
+def test_write_to_csv_existing_file(mock_validate, tmp_path):
     filepath = tmp_path / "existing_test.csv"
     with open(filepath, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
