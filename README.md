@@ -1,6 +1,6 @@
 # 김치골드 (Kimchi Gold) 📊
 
-![](./data/kimchi_gold_price_recent_12months.png)
+![최근 12개월 김치프리미엄 차트](https://raw.githubusercontent.com/partrita/kimchi-gold/data-store/data/kimchi_gold_price_recent_12months.png)
 
 한국 금 시장의 김치 프리미엄을 모니터링하고 분석하는 Python 패키지입니다. 실시간 가격 수집, 데이터 분석, 백테스팅, 시각화 기능을 제공합니다.
 
@@ -173,14 +173,27 @@ kimchi-gold/
 ├── tests/                    # 테스트 파일
 │   ├── test_collect_data.py
 │   └── test_now_price.py
-├── data/                     # 데이터 저장소
+├── data/                     # 데이터 저장소 (git 미추적, 아래 '데이터 관리' 참고)
 │   ├── kimchi_gold_price_log.csv
 │   └── *.png                # 생성된 차트들
 ├── pyproject.toml           # 프로젝트 설정
 ├── README.md               # 프로젝트 문서
 ├── LICENSE                 # 라이선스 (Apache 2.0)
-├── FILE_AND_VARIABLE_NAMING_GUIDE.md  # 명명 규칙 가이드
-└── REFACTORING_SUMMARY.md  # 리팩토링 요약
+└── AGENTS.md               # 에이전트 가이드 (명명 규칙, 리팩토링, 학습 기록)
+```
+
+### 데이터 관리 (data-store 브랜치)
+
+수집 데이터가 main 히스토리에 매일 누적되는 것을 막기 위해, `data/` 디렉터리는 git 추적 대상에서 제외하고 **`data-store` 고아(orphan) 브랜치에서 단일 스냅샷으로 관리**합니다.
+
+- GitHub Actions의 일일 수집 워크플로우가 매일 최신 스냅샷을 `data-store`에 강제 갱신합니다 (히스토리 없음).
+- 웹사이트 배포 워크플로우는 렌더링 전에 `data-store`에서 최신 데이터를 가져옵니다.
+
+로컬에서 최신 데이터를 받아오려면:
+
+```bash
+git fetch origin data-store --depth=1
+git checkout origin/data-store -- data
 ```
 
 ### 핵심 모듈 설명
