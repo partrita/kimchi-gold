@@ -73,16 +73,18 @@ jobs:
               body: issueBody
             });
 
-      - name: Commit and push changes
+      - name: Publish data snapshot to data-store branch
         run: |
           git config --local user.email "deepthough@postech.ac.kr"
-          git config --local user.name "Auto_Scraping"
-          git add data/*.csv data/*.png
+          git config user.name "Auto_Scraping"
+          # data-store는 단일 커밋으로 강제 갱신하는 고아 브랜치로,
+          # 매일의 스냅샷이 main 히스토리에 누적되지 않게 한다.
+          git checkout --orphan _data_snapshot
+          git rm -rf --cached . > /dev/null
+          git add -f data/
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Update scraped data and charts"
-            git push
+            git commit -m "data: $(date -u +%Y-%m-%d) snapshot"
+            git push --force origin _data_snapshot:data-store
           else
-            echo "No changes to commit in data/. Skipping commit."
+            echo "No data to publish. Skipping."
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

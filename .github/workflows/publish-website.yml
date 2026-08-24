@@ -25,6 +25,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Fetch latest data from data-store branch
+        run: |
+          git fetch origin data-store --depth=1
+          git checkout origin/data-store -- data
+          ls -la data/
+
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
@@ -48,3 +54,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./website/docs
+          # 매 배포마다 gh-pages를 단일 커밋으로 교체해 히스토리 누적 방지
+          force_orphan: true

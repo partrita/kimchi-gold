@@ -178,3 +178,12 @@ cython_debug/
 website/.quarto/
 website/docs/
 .agent
+
+# 수집 데이터: 히스토리 누적 방지를 위해 git 추적하지 않음.
+# 실제 데이터는 data-store 고아 브랜치에서 관리 (README 참고).
+/data/
+
+# Quarto 빌드 산출물이 저장소 루트에 커밋되는 것을 방지
+/index.html
+/site_libs/
+/search.json
