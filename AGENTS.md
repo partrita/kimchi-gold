@@ -1,10 +1,12 @@
-# AGENTS.md
+# Project Instructions (for AI Agents)
 
-김치골드 프로젝트 에이전트 가이드: 명명 규칙, 리팩토링 요약, 학습 기록(성능/디자인/보안).
+## Language Rule — Always Use ASD-STE100
+- Always write all agent-facing text in ASD-STE100 Simplified Technical English.
+- Use short sentences. Use approved words. Avoid ambiguity.
+- Do not use idioms. Do not use long nouns. Do not use passive voice unless needed.
+- Apply this rule to: comments, commit messages, pull request descriptions, documentation, and chat replies.
 
----
-
-## 1. 파일명 및 변수명 가이드
+## 파일명 및 변수명 가이드
 
 ### 개요
 
