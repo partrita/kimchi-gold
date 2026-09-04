@@ -99,6 +99,8 @@ jobs:
 
       - name: Render Quarto website
         uses: quarto-dev/quarto-actions/render@v2
+        env:
+          QUARTO_PYTHON: .venv/bin/python
         with:
           path: website
           to: html
