@@ -43,23 +43,23 @@ jobs:
       - name: Install project
         run: uv sync --locked --all-extras --dev
 
-      - name: Create data directory
-        run: mkdir -p data
+      - name: Restore historical data from data-store
+        run: |
+          git fetch origin data-store --depth=1 || true
+          if git show-ref --verify --quiet refs/remotes/origin/data-store; then
+            echo "Restoring data from data-store branch..."
+            git checkout origin/data-store -- data/kimchi_gold_price_log.csv || true
+            # data-store may contain PNG, restore it too if exists
+            git checkout origin/data-store -- data/kimchi_gold_price_recent_12months.png 2>/dev/null || true
+          else
+            echo "No data-store branch found, start fresh"
+            mkdir -p data
+          fi
+          ls -lh data/ || true
+          wc -l data/kimchi_gold_price_log.csv || echo "no csv yet"
 
       - name: Run data collector
-        id: collect
-        run: |
-          uv run python scripts/collect_data.py
-          echo "changed=$(git status --porcelain data/ | wc -l)" >> $GITHUB_OUTPUT
-
-      - name: Commit and push data
-        if: steps.collect.outputs.changed != '0'
-        run: |
-          git config user.name "Auto_Scraping"
-          git config user.email "deepthough@postech.ac.kr"
-          git add -f data/kimchi_gold_price_log.csv
-          git commit -m "data: $(date -u +%Y-%m-%d) update [skip ci]" || true
-          git push origin HEAD:main
+        run: uv run python scripts/collect_data.py
 
       - name: Run chart generator
         run: uv run python scripts/generate_chart.py || true
@@ -93,6 +93,46 @@ jobs:
               title: '김치 프리미엄 이상치 감지 알림',
               body
             });
+
+      - name: Publish data to data-store branch
+        run: |
+          git config user.name "Auto_Scraping"
+          git config user.email "deepthough@postech.ac.kr"
+          # Save current data snapshot to temp (contains full history + today's row)
+          mkdir -p /tmp/snapshot
+          cp data/kimchi_gold_price_log.csv /tmp/snapshot/kimchi_gold_price_log.csv || true
+          cp data/kimchi_gold_price_recent_12months.png /tmp/snapshot/ 2>/dev/null || true
+          wc -l /tmp/snapshot/kimchi_gold_price_log.csv || true
+
+          git fetch origin data-store --depth=1 || true
+          if git show-ref --verify --quiet refs/remotes/origin/data-store; then
+            git checkout data-store
+            # Keep workflow file in sync to avoid divergence
+            git checkout main -- .github/workflows/daily.yml 2>/dev/null || true
+          else
+            git checkout --orphan data-store
+            git rm -rf --cached . > /dev/null || true
+          fi
+
+          mkdir -p data
+          cp /tmp/snapshot/kimchi_gold_price_log.csv data/kimchi_gold_price_log.csv
+          cp /tmp/snapshot/kimchi_gold_price_recent_12months.png data/ 2>/dev/null || true
+
+          git add -f data/
+          if git diff --cached --quiet; then
+            echo "No data changes to publish"
+          else
+            git commit -m "data: $(date -u +%Y-%m-%d) snapshot"
+            git push origin data-store
+          fi
+
+          # Return to main for Pages deploy and restore data for quarto
+          git checkout main
+          mkdir -p data
+          cp /tmp/snapshot/kimchi_gold_price_log.csv data/kimchi_gold_price_log.csv
+          cp /tmp/snapshot/kimchi_gold_price_recent_12months.png data/ 2>/dev/null || true
+          ls -lh data/
+          wc -l data/kimchi_gold_price_log.csv
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
