@@ -1,0 +1,116 @@
+name: Daily Collect and Deploy
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # 12:00 KST
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [website/**]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  issues: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  collect-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libjpeg-dev zlib1g-dev
+
+      - name: Install project
+        run: uv sync --locked --all-extras --dev
+
+      - name: Create data directory
+        run: mkdir -p data
+
+      - name: Run data collector
+        id: collect
+        run: |
+          uv run python scripts/collect_data.py
+          echo "changed=$(git status --porcelain data/ | wc -l)" >> $GITHUB_OUTPUT
+
+      - name: Commit and push data
+        if: steps.collect.outputs.changed != '0'
+        run: |
+          git config user.name "Auto_Scraping"
+          git config user.email "deepthough@postech.ac.kr"
+          git add -f data/kimchi_gold_price_log.csv
+          git commit -m "data: $(date -u +%Y-%m-%d) update [skip ci]" || true
+          git push origin HEAD:main
+
+      - name: Run chart generator
+        run: uv run python scripts/generate_chart.py || true
+
+      - name: Run outlier analyzer
+        id: outlier
+        run: |
+          output=$(uv run python scripts/analyze_outlier.py)
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "full_output<<$EOF" >> $GITHUB_OUTPUT
+          echo "$output" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+          result=$(echo "$output" | head -1)
+          echo "result=$result" >> $GITHUB_OUTPUT
+          echo "Result: $result"
+
+      - name: Create issue on outlier
+        if: steps.outlier.outputs.result == 'True'
+        uses: actions/github-script@v9
+        env:
+          FULL_OUTPUT: ${{ steps.outlier.outputs.full_output }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fullOutput = process.env.FULL_OUTPUT || "";
+            const lines = fullOutput.split('\n').filter(l => l.trim() !== '');
+            const body = `김치 프리미엄이 통계적 이상치로 감지되었습니다.\n\n${lines.slice(1).join('\n')}\n\n자세한 분석 결과는 Actions 로그를 확인해주세요.`;
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '김치 프리미엄 이상치 감지 알림',
+              body
+            });
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Render Quarto website
+        uses: quarto-dev/quarto-actions/render@v2
+        with:
+          path: website
+          to: html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: website/docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
