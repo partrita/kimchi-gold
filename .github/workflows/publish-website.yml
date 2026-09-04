@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - 'website/**'
-      - 'data/**'
   workflow_dispatch:
   workflow_run:
     workflows: ["Daily Kimchi Gold"]
