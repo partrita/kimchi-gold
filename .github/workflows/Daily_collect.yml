@@ -80,14 +80,23 @@ jobs:
         run: |
           git config --local user.email "deepthough@postech.ac.kr"
           git config user.name "Auto_Scraping"
-          # data-store는 단일 커밋으로 강제 갱신하는 고아 브랜치로,
-          # 매일의 스냅샷이 main 히스토리에 누적되지 않게 한다.
-          git checkout --orphan _data_snapshot
-          git rm -rf --cached . > /dev/null
+          # data-store 브랜치에 누적 히스토리를 유지한다.
+          git fetch origin data-store --depth=1 || true
+          if git show-ref --verify --quiet refs/remotes/origin/data-store; then
+            git checkout data-store
+            # data-store 브랜치는 data/만 포함하므로 main 파일과 충돌 방지
+            git checkout main -- .github/workflows/Daily_collect.yml 2>/dev/null || true
+          else
+            git checkout --orphan data-store
+            git rm -rf --cached . > /dev/null || true
+          fi
+          mkdir -p data
+          git checkout main -- data/kimchi_gold_price_log.csv 2>/dev/null || true
+          # collector가 생성한 최신 data/를 우선 유지 (이미 워크스페이스에 있음)
           git add -f data/
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "data: $(date -u +%Y-%m-%d) snapshot"
-            git push --force origin _data_snapshot:data-store
+            git push origin data-store
           else
             echo "No data to publish. Skipping."
           fi
