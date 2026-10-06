@@ -1,0 +1,25 @@
+name: Refresh Jupyter security locks
+
+on:
+  push:
+    branches:
+      - security/jupyterlab-xss-2026-10
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+      - run: uv lock --upgrade-package jupyterlab --upgrade-package notebook
+      - name: Commit updated lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add uv.lock
+          git diff --cached --quiet || git commit -m "fix: update JupyterLab and Notebook security patches"
+          git push
