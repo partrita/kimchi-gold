@@ -1,12 +1,14 @@
-import pandas as pd
 import argparse
-from datetime import datetime
-import sys
-from pathlib import Path
-from .backtest import run_backtest, load_data
-import numpy as np
 import logging
 import math
+import sys
+from datetime import datetime
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+from .backtest import load_data, run_backtest
 
 # 로깅 설정
 logger = logging.getLogger(__name__)
@@ -50,8 +52,8 @@ def run_optimization(data, initial_investment=1000000, start_date=None,
         # Run backtest with current threshold (buy = -threshold, sell = +threshold)
         try:
             # Suppress print output from backtest
-            import io
             import contextlib
+            import io
             
             f = io.StringIO()
             with contextlib.redirect_stdout(f):

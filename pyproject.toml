@@ -31,4 +31,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.ruff.lint]
-extend-ignore = ['E402']
+extend-ignore = ['E402', 'BLE001']

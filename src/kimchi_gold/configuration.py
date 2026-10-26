@@ -3,7 +3,6 @@ kimchi-gold 프로젝트의 설정과 상수들을 정의하는 모듈입니다.
 """
 
 from pathlib import Path
-from typing import Dict
 
 # 파일 경로 설정
 CURRENT_MODULE_DIRECTORY = Path(__file__).resolve().parent
@@ -15,7 +14,7 @@ DATA_STORAGE_DIRECTORY.mkdir(parents=True, exist_ok=True)
 GOLD_PRICE_DATA_CSV_FILE = DATA_STORAGE_DIRECTORY / "kimchi_gold_price_log.csv"
 
 # HTTP 요청 헤더
-REQUEST_HEADERS: Dict[str, str] = {
+REQUEST_HEADERS: dict[str, str] = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "

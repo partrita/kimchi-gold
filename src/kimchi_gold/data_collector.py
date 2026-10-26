@@ -4,14 +4,14 @@
 
 import csv
 import logging
+import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
 
 from .configuration import (
-    GOLD_PRICE_DATA_CSV_FILE,
     CSV_COLUMN_HEADERS,
     DATA_STORAGE_DIRECTORY,
+    GOLD_PRICE_DATA_CSV_FILE,
 )
 from .data_models import GoldPriceData
 from .price_fetcher import fetch_current_gold_market_data
@@ -53,7 +53,7 @@ def validate_safe_path(
 
 def check_if_date_already_logged(
     csv_file_path: Path = GOLD_PRICE_DATA_CSV_FILE,
-    target_date_to_check: Optional[datetime] = None,
+    target_date_to_check: datetime | None = None,
 ) -> bool:
     """
     지정된 날짜가 이미 파일에 기록되어 있으면 True 반환
@@ -136,7 +136,7 @@ def save_gold_price_data_to_csv(
         logger.error(
             f"Failed to write data to {safe_output_csv_file_path}: {file_write_error}"
         )
-        raise IOError("파일 쓰기 실패: 시스템 로그를 확인해주세요.")
+        raise OSError("파일 쓰기 실패: 시스템 로그를 확인해주세요.")
 
 
 def collect_and_save_current_gold_market_data(
@@ -180,7 +180,7 @@ def collect_and_save_current_gold_market_data(
 
 # 하위 호환성을 위한 레거시 함수들
 def write_to_csv(
-    row_data: List[str], csv_file_path: Path = GOLD_PRICE_DATA_CSV_FILE
+    row_data: list[str], csv_file_path: Path = GOLD_PRICE_DATA_CSV_FILE
 ) -> None:
     """
     레거시 호환성을 위한 함수 - 새로운 코드에서는 save_gold_price_data_to_csv() 사용 권장
@@ -243,4 +243,4 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

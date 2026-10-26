@@ -1,5 +1,7 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
+
 from kimchi_gold import price_fetcher
 
 MOCK_DOMESTIC_PRICE_TEXT = "80,123.45"
@@ -23,7 +25,7 @@ def test_get_price_from_naver_success():
                     <strong class="DetailInfo_price__I_VJn">{MOCK_DOMESTIC_PRICE_TEXT}</strong>
                 </body>
             </html>
-        """.encode("utf-8")
+        """.encode()
         mock_get.return_value.__enter__.return_value.iter_content.return_value = [content]
         mock_soup_instance = mock_bs.return_value
         mock_soup_instance.find.return_value.get_text.return_value = (
@@ -53,13 +55,13 @@ def test_get_price_from_naver_no_price_tag():
     ):
         mock_get.return_value.__enter__.return_value.is_redirect = False
         mock_get.return_value.__enter__.return_value.headers = {"Content-Type": "text/html"}
-        content = """
+        content = b"""
             <html>
                 <body>
                     <div>No price here</div>
                 </body>
             </html>
-        """.encode("utf-8")
+        """
         mock_get.return_value.__enter__.return_value.iter_content.return_value = [content]
         mock_soup_instance = mock_bs.return_value
         mock_soup_instance.find.return_value = None
@@ -94,7 +96,7 @@ def test_get_price_from_naver_no_price_in_text():
                     <strong class="DetailInfo_price__I_VJn">문자열</strong>
                 </body>
             </html>
-        """.encode("utf-8")
+        """.encode()
         mock_get.return_value.__enter__.return_value.iter_content.return_value = [content]
         mock_soup_instance = mock_bs.return_value
         mock_soup_instance.find.return_value.get_text.return_value = "문자열"
@@ -284,7 +286,7 @@ def test_extract_price_algorithmic_complexity_dos_mitigation():
         mock_get.return_value.__enter__.return_value.headers = {"Content-Type": "text/html"}
 
         # HTML 내용 모의
-        content = f"<html><body><strong class='DetailInfo_price__I_VJn'>{long_price_string}</strong></body></html>".encode("utf-8")
+        content = f"<html><body><strong class='DetailInfo_price__I_VJn'>{long_price_string}</strong></body></html>".encode()
         mock_get.return_value.__enter__.return_value.iter_content.return_value = [content]
 
         # BeautifulSoup 모의 설정

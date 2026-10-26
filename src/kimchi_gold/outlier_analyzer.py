@@ -3,10 +3,11 @@
 """
 
 import logging
-import pandas as pd
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional
+
+import pandas as pd
 
 from .configuration import GOLD_PRICE_DATA_CSV_FILE
 
@@ -166,7 +167,7 @@ def perform_kimchi_premium_outlier_analysis(
     analysis_column_name: str = "김치프리미엄(%)",
     historical_analysis_days: int = 365,
     statistical_threshold_multiplier: float = 1.5,
-) -> Optional[dict]: # Change return type to Optional[dict]
+) -> dict | None: # Change return type to Optional[dict]
     """
     김치 프리미엄 데이터의 이상치 분석을 수행합니다.
 
@@ -264,4 +265,4 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

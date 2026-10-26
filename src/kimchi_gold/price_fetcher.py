@@ -2,21 +2,22 @@
 금 가격 데이터를 네이버 금융에서 가져오는 모듈입니다.
 """
 
-import re
-import time
 import logging
 import math
-from typing import Tuple
+import re
+import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlparse
+
 import requests
 from bs4 import BeautifulSoup
 
 from .configuration import (
-    REQUEST_HEADERS,
     NAVER_DOMESTIC_GOLD_URL,
     NAVER_INTERNATIONAL_GOLD_URL,
     NAVER_USD_KRW_EXCHANGE_URL,
+    REQUEST_HEADERS,
     TROY_OUNCE_TO_GRAM_CONVERSION_RATE,
 )
 from .data_models import GoldPriceData
@@ -226,7 +227,7 @@ def convert_international_gold_price_to_krw_per_gram(
 
 def calculate_kimchi_premium_values(
     domestic_price_krw_per_gram: float, international_price_krw_per_gram: float
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """
     김치 프리미엄을 계산합니다.
 
@@ -298,7 +299,7 @@ def fetch_current_gold_market_data() -> GoldPriceData:
 
 
 # 하위 호환성을 위한 레거시 함수들
-def calc_kimchi_premium() -> Tuple[float, float, float, float, float, float]:
+def calc_kimchi_premium() -> tuple[float, float, float, float, float, float]:
     """
     레거시 호환성을 위한 함수 - 새로운 코드에서는 fetch_current_gold_market_data() 사용 권장
     """
@@ -356,4 +357,4 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

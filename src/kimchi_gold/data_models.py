@@ -4,7 +4,6 @@ kimchi-gold 프로젝트의 데이터 모델을 정의하는 모듈입니다.
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List
 
 
 @dataclass
@@ -25,7 +24,7 @@ class GoldPriceData:
 
     def convert_to_csv_row_format(
         self, date_string_format: str = "%Y-%m-%d"
-    ) -> List[str]:
+    ) -> list[str]:
         """CSV 파일에 저장할 수 있는 형태의 리스트로 변환"""
         return [
             self.data_collection_timestamp.strftime(date_string_format),
@@ -50,7 +49,7 @@ class GoldPriceData:
     def timestamp(self):
         return self.data_collection_timestamp
 
-    def to_csv_row(self, date_format: str = "%Y-%m-%d") -> List[str]:
+    def to_csv_row(self, date_format: str = "%Y-%m-%d") -> list[str]:
         return self.convert_to_csv_row_format(date_format)
 
 

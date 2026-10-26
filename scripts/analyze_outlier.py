@@ -14,9 +14,10 @@ src_path = project_root / "src"
 sys.path.insert(0, str(src_path))
 
 # Now import the outlier analyzer
-from kimchi_gold.outlier_analyzer import perform_kimchi_premium_outlier_analysis
-from kimchi_gold.configuration import GOLD_PRICE_DATA_CSV_FILE
 import logging
+
+from kimchi_gold.configuration import GOLD_PRICE_DATA_CSV_FILE
+from kimchi_gold.outlier_analyzer import perform_kimchi_premium_outlier_analysis
 
 # Configure logging
 logging.basicConfig(

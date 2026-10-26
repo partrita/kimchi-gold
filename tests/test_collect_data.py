@@ -1,6 +1,7 @@
-from unittest.mock import patch
-from datetime import datetime
 import csv
+from datetime import datetime
+from unittest.mock import patch
+
 from kimchi_gold.data_collector import collect_data, is_today_logged, write_to_csv
 
 # 테스트 데이터

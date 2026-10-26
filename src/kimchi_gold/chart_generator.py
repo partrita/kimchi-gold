@@ -3,20 +3,23 @@
 """
 
 import sys
-import pandas as pd
+
 import matplotlib
+import pandas as pd
+
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-from pathlib import Path
-from datetime import datetime, timedelta
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 import logging
+from datetime import datetime, timedelta
+from pathlib import Path
+
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+
 from .configuration import (
+    CHART_OUTPUT_FILE_NAME,
     DATA_STORAGE_DIRECTORY,
     DEFAULT_CHART_DISPLAY_MONTHS,
-    CHART_OUTPUT_FILE_NAME,
 )
 
 # 로깅 설정
@@ -199,9 +202,8 @@ def create_comprehensive_gold_price_charts():
 
     plt.style.use("seaborn-v0_8-whitegrid")
 
-    chart_figure: Figure
     chart_axes_list: list[Axes]
-    chart_figure, chart_axes_list = plt.subplots(nrows=3, ncols=1, figsize=(12, 15))
+    _chart_figure, chart_axes_list = plt.subplots(nrows=3, ncols=1, figsize=(12, 15))
     plt.subplots_adjust(hspace=0.5)
 
     generate_kimchi_premium_chart(
