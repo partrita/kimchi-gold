@@ -30,5 +30,8 @@ website = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.uv]
+constraint-dependencies = ["soupsieve>=4.0.0"]
+
 [tool.ruff.lint]
 extend-ignore = ['E402', 'BLE001']
