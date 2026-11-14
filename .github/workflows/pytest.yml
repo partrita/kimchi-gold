@@ -2,8 +2,9 @@ name: Pytest with uv
 
 on:
   push:
-    branches:
-      - main   # 또는 원하는 브랜치명(ex: master, develop 등)
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -21,16 +22,8 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
-      - name: Set up Python
-        run: uv python install 3.11
-
-      - name: Install Pillow dependencies
-        run: sudo apt-get update && sudo apt-get install -y libjpeg-dev zlib1g-dev
-  
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --locked
 
       - name: Run pytest
-        env:
-          PYTHONPATH: ${{ github.workspace }}
         run: uv run pytest
